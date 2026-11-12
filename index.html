@@ -36,18 +36,12 @@
         .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 7px; }
 
         .chart-box { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 24px; }
-        .chart-box h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
+        .chart-box h3 { font-size: 15px; color: #0f172a; margin-bottom: 14px; text-align: center; }
 
         .rodape-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
         .rodape-votos div { text-align: center; }
         .rodape-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
     </style>
-
-    <!-- Chart.js para o Gráfico de Linhas -->
-    <script src="[suspicious link removed]"></script>
-    <!-- Firebase SDK -->
-    <script src="[suspicious link removed]"></script>
-    <script src="[suspicious link removed]"></script>
 </head>
 <body>
     <div class="container">
@@ -70,21 +64,11 @@
 
         <div class="chart-box">
             <h3>Evolução dos Votos em Tempo Real</h3>
-            <canvas id="graficoEvolucao" height="200"></canvas>
+            <canvas id="graficoEvolucao" style="width: 100%; height: 220px;"></canvas>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "SEU_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
-            projectId: "SEU_PROJETO"
-        };
-
-        const usarFirebase = firebaseConfig.apiKey && firebaseConfig.apiKey !== "SEU_API_KEY";
-        let meugrafico = null;
-
         function renderizar(data) {
             if (!data) return;
 
@@ -108,7 +92,11 @@
             document.getElementById('votosNulos').innerText = nulos;
             document.getElementById('votosTotais').innerText = totalGeral;
 
+            // Ordenar do mais votado para o menos votado
             candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
+
+            // Regra do 1º Turno: Verifica se o 1º colocado tem mais de 50% dos votos válidos
+            const alguemEleito1Turno = totalValidos > 0 && candidatos[0] && candidatos[0].votos > (totalValidos / 2);
 
             let html = '';
             candidatos.forEach((c, index) => {
@@ -118,32 +106,29 @@
                 let badgeStatus = '';
                 if (!votacaoAberta) {
                     if (turno === '1') {
-                        const temMaioriaAbsoluta = votosCand > (totalValidos / 2) && totalValidos > 0;
-                        if (temMaioriaAbsoluta) {
-                            badgeStatus = index === 0 ? '<div class="badge-eleito">ELEITO NO 1º TURNO</div>' : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
+                        if (alguemEleito1Turno) {
+                            badgeStatus = (index === 0) 
+                                ? '<div class="badge-eleito">ELEITO NO 1º TURNO</div>' 
+                                : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
                         } else {
-                            if (index === 0 || index === 1) {
-                                badgeStatus = '<div class="badge-2turno">VAI PARA O 2º TURNO</div>';
-                            } else {
-                                badgeStatus = '<div class="badge-nao-eleito">NÃO ELEITO</div>';
-                            }
+                            badgeStatus = (index === 0 || index === 1) 
+                                ? '<div class="badge-2turno">VAI PARA O 2º TURNO</div>' 
+                                : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
                         }
                     } else {
-                        if (index === 0 && totalValidos > 0) {
-                            badgeStatus = '<div class="badge-eleito">ELEITO</div>';
-                        } else {
-                            badgeStatus = '<div class="badge-nao-eleito">NÃO ELEITO</div>';
-                        }
+                        badgeStatus = (index === 0 && totalValidos > 0) 
+                            ? '<div class="badge-eleito">ELEITO</div>' 
+                            : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
                     }
                 }
 
-                const fotoUrl = c.foto || '[suspicious link removed]';
+                const fotoUrl = c.foto || '';
 
                 html += `
                     <div class="card">
                         <div class="cand-top">
                             <div class="cand-info">
-                                <img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">
+                                ${fotoUrl ? `<img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">` : '<div class="cand-photo"></div>'}
                                 <div>
                                     <div class="cand-name">${c.nome}</div>
                                     ${badgeStatus}
@@ -162,58 +147,139 @@
             });
 
             document.getElementById('candidatosContainer').innerHTML = html;
-            atualizarGrafico(data.historico || []);
+            desenharGrafico(data.historico || []);
         }
 
-        function atualizarGrafico(historico) {
-            const ctx = document.getElementById('graficoEvolucao').getContext('2d');
-            if (historico.length === 0) return;
+        // Desenhar o Gráfico em Canvas Nativo (Zero dependências externas)
+        function desenharGrafico(historico) {
+            const canvas = document.getElementById('graficoEvolucao');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth - 36 || 600;
+            canvas.height = 220;
 
-            const labels = historico.map(h => h.hora);
-            const nomesCandidatos = Object.keys(historico[0].votosPorCand || {});
-            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2'];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const datasets = nomesCandidatos.map((nome, idx) => {
-                return {
-                    label: nome,
-                    data: historico.map(h => (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0),
-                    borderColor: cores[idx % cores.length],
-                    backgroundColor: cores[idx % cores.length],
-                    tension: 0.3,
-                    borderWidth: 3,
-                    pointRadius: 4
-                };
+            if (!historico || historico.length === 0) {
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Segoe UI, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Nenhum dado de apuração registrado ainda.', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const candidatosSet = new Set();
+            historico.forEach(h => {
+                if (h.votosPorCand) {
+                    Object.keys(h.votosPorCand).forEach(nome => candidatosSet.add(nome));
+                }
+            });
+            const nomesCandidatos = Array.from(candidatosSet);
+            if (nomesCandidatos.length === 0) return;
+
+            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
+
+            let maxVotos = 1;
+            historico.forEach(h => {
+                if (h.votosPorCand) {
+                    Object.values(h.votosPorCand).forEach(v => {
+                        if (v > maxVotos) maxVotos = v;
+                    });
+                }
             });
 
-            if (meugrafico) {
-                meugrafico.data.labels = labels;
-                meugrafico.data.datasets = datasets;
-                meugrafico.update();
-            } else {
-                meugrafico = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: labels, datasets: datasets },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { position: 'top' } },
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
+            const paddingLeft = 45;
+            const paddingRight = 20;
+            const paddingTop = 35;
+            const paddingBottom = 35;
+            const width = canvas.width - paddingLeft - paddingRight;
+            const height = canvas.height - paddingTop - paddingBottom;
+
+            // Linhas de Grade e Escala Y
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Segoe UI, sans-serif';
+            ctx.textAlign = 'right';
+
+            const gridLines = 4;
+            for (let i = 0; i <= gridLines; i++) {
+                const yVal = Math.round((maxVotos / gridLines) * i);
+                const yPos = paddingTop + height - (i / gridLines) * height;
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yPos);
+                ctx.lineTo(paddingLeft + width, yPos);
+                ctx.stroke();
+
+                ctx.fillText(yVal, paddingLeft - 8, yPos + 4);
             }
+
+            // Legenda no Topo
+            let legendX = paddingLeft;
+            ctx.textAlign = 'left';
+            nomesCandidatos.forEach((nome, idx) => {
+                const cor = cores[idx % cores.length];
+                ctx.fillStyle = cor;
+                ctx.fillRect(legendX, 10, 12, 12);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 12px Segoe UI, sans-serif';
+                ctx.fillText(nome, legendX + 16, 20);
+                legendX += ctx.measureText(nome).width + 35;
+            });
+
+            // Traçar Linhas de Evolução
+            const totalPontos = historico.length;
+            const stepX = totalPontos > 1 ? width / (totalPontos - 1) : width / 2;
+
+            nomesCandidatos.forEach((nome, idx) => {
+                const cor = cores[idx % cores.length];
+                ctx.strokeStyle = cor;
+                ctx.fillStyle = cor;
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                historico.forEach((h, i) => {
+                    const votos = (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0;
+                    const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                    const y = paddingTop + height - ((votos / maxVotos) * height);
+
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // Desenhar os Pontos
+                historico.forEach((h, i) => {
+                    const votos = (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0;
+                    const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                    const y = paddingTop + height - ((votos / maxVotos) * height);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+
+            // Horários no Eixo X
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            historico.forEach((h, i) => {
+                const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                ctx.fillText(h.hora || '', x, canvas.height - 8);
+            });
         }
 
-        if (usarFirebase) {
-            firebase.initializeApp(firebaseConfig);
-            firebase.database().ref('apuracao').on('value', snapshot => renderizar(snapshot.val()));
-        } else {
-            function carregarLocal() {
-                const salvas = localStorage.getItem('dadosApuracao');
-                if (salvas) renderizar(JSON.parse(salvas));
-            }
-            carregarLocal();
-            window.addEventListener('storage', carregarLocal);
-            setInterval(carregarLocal, 1000);
+        function carregarLocal() {
+            const salvas = localStorage.getItem('dadosApuracao');
+            if (salvas) renderizar(JSON.parse(salvas));
         }
+        
+        carregarLocal();
+        window.addEventListener('storage', carregarLocal);
+        setInterval(carregarLocal, 1000);
     </script>
 </body>
 </html>
