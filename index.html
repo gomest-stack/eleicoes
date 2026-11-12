@@ -20,11 +20,10 @@
         .cand-top { display: flex; align-items: center; justify-content: space-between; }
         .cand-info { display: flex; align-items: center; gap: 16px; }
         
-        /* Destaque para a Foto do Candidato */
         .cand-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); background-color: #f8fafc; }
         .cand-name { font-size: 19px; font-weight: 700; color: #0f172a; }
 
-        .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; letter-spacing: 0.5px; }
+        .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; }
         .badge-nao-eleito { background-color: #94a3b8; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 4px; display: inline-block; }
 
         .pct-big { font-size: 28px; font-weight: 800; color: #2563eb; text-align: right; line-height: 1; }
@@ -38,7 +37,6 @@
         .rodapé-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
     </style>
 
-    <!-- Firebase SDK -->
     <script src="[suspicious link removed]"></script>
     <script src="[suspicious link removed]"></script>
 </head>
@@ -60,22 +58,16 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
             apiKey: "SEU_API_KEY",
             authDomain: "SEU_PROJETO.firebaseapp.com",
             databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "SEU_APP_ID"
+            projectId: "SEU_PROJETO"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const usarFirebase = firebaseConfig.apiKey !== "SEU_API_KEY";
 
-        db.ref('apuracao').on('value', (snapshot) => {
-            const data = snapshot.val();
+        function renderizar(data) {
             if (!data) return;
 
             document.getElementById('lastUpdate').innerText = data.ultimaAtualizacao || '--';
@@ -101,11 +93,11 @@
             candidatos.forEach((c) => {
                 const votosCand = c.votos || 0;
                 const pctValidos = totalValidos > 0 ? ((votosCand / totalValidos) * 100).toFixed(2) : '0.00';
-                const temMaioriaAbsoluta = votosCand > (totalValidos / 2) && totalValidos > 0;
+                const temMaioria = votosCand > (totalValidos / 2) && totalValidos > 0;
 
                 let badgeStatus = '';
                 if (!votacaoAberta) {
-                    badgeStatus = temMaioriaAbsoluta 
+                    badgeStatus = temMaioria 
                         ? '<div class="badge-eleito">ELEITO</div>' 
                         : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
                 }
@@ -135,7 +127,21 @@
             });
 
             document.getElementById('candidatosContainer').innerHTML = html;
-        });
+        }
+
+        if (usarFirebase) {
+            firebase.initializeApp(firebaseConfig);
+            firebase.database().ref('apuracao').on('value', snapshot => renderizar(snapshot.val()));
+        } else {
+            // Funciona no computador local sem travar
+            function carregarLocal() {
+                const salvas = localStorage.getItem('dadosApuracao');
+                if (salvas) renderizar(JSON.parse(salvas));
+            }
+            carregarLocal();
+            window.addEventListener('storage', carregarLocal);
+            setInterval(carregarLocal, 1000);
+        }
     </script>
 </body>
 </html>
