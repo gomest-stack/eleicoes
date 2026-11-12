@@ -5,44 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divulgação de Resultados - Apuração</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #0b1a2d; color: #fff; padding: 20px; }
-        .container { max-width: 650px; margin: 0 auto; background: #132742; border-radius: 12px; padding: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 1px solid #1c385e; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: #f0f4f8; color: #1e293b; padding: 20px; }
+        .container { max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         
-        .header { text-align: center; border-bottom: 1px solid #1c385e; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { font-size: 22px; color: #76b9ed; text-transform: uppercase; letter-spacing: 1px; }
-        .status-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-top: 10px; }
-        .aberta { background-color: #0288d1; color: #fff; }
-        .fechada { background-color: #d32f2f; color: #fff; }
-        .info-bar { font-size: 13px; color: #90caf9; text-align: center; margin-top: 8px; }
+        .header { text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 24px; }
+        .header h1 { font-size: 24px; color: #0f172a; font-weight: 700; letter-spacing: -0.5px; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-top: 10px; }
+        .aberta { background-color: #e0f2fe; color: #0369a1; }
+        .fechada { background-color: #fee2e2; color: #b91c1c; }
+        .info-bar { font-size: 13px; color: #64748b; text-align: center; margin-top: 8px; }
 
-        .card { background: #1a3557; border: 1px solid #284b75; border-radius: 10px; padding: 18px; margin-bottom: 16px; position: relative; display: flex; flex-direction: column; gap: 12px; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
         .cand-top { display: flex; align-items: center; justify-content: space-between; }
-        .cand-info { display: flex; align-items: center; gap: 15px; }
+        .cand-info { display: flex; align-items: center; gap: 16px; }
         
-        /* Estilo da Foto do Candidato estilo TSE */
-        .cand-photo { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid #2196f3; background-color: #0b1a2d; }
-        .cand-name { font-size: 20px; font-weight: bold; color: #fff; }
+        /* Destaque para a Foto do Candidato */
+        .cand-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); background-color: #f8fafc; }
+        .cand-name { font-size: 19px; font-weight: 700; color: #0f172a; }
 
-        .badge-eleito { background-color: #2e7d32; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; }
-        .badge-nao-eleito { background-color: #546e7a; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 13px; }
+        .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; letter-spacing: 0.5px; }
+        .badge-nao-eleito { background-color: #94a3b8; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 4px; display: inline-block; }
 
-        .pct-big { font-size: 26px; font-weight: bold; color: #4fc3f7; text-align: right; }
-        .votos-qtd { font-size: 13px; color: #b0bec5; text-align: right; }
+        .pct-big { font-size: 28px; font-weight: 800; color: #2563eb; text-align: right; line-height: 1; }
+        .votos-qtd { font-size: 13px; color: #64748b; text-align: right; margin-top: 4px; font-weight: 500; }
 
-        .progress-bg { background: #0d2137; height: 16px; border-radius: 8px; overflow: hidden; }
-        .progress-fill { background: linear-gradient(90deg, #1976d2, #4fc3f7); height: 100%; width: 0%; transition: width 0.4s ease; }
+        .progress-bg { background: #f1f5f9; height: 14px; border-radius: 7px; overflow: hidden; }
+        .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 7px; }
 
-        .rodapé-votos { display: flex; justify-content: space-around; background: #0d2137; padding: 14px; border-radius: 8px; font-size: 14px; margin-top: 20px; border: 1px solid #1c385e; }
+        .rodapé-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 24px; border: 1px solid #e2e8f0; color: #475569; }
         .rodapé-votos div { text-align: center; }
-        .rodapé-votos span { display: block; font-weight: bold; font-size: 16px; color: #fff; margin-top: 3px; }
+        .rodapé-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
     </style>
+
+    <!-- Firebase SDK -->
+    <script src="[suspicious link removed]"></script>
+    <script src="[suspicious link removed]"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Eleições - Apuração Oficial</h1>
-            <div id="statusBadge" class="status-badge aberta">EM APURAÇÃO</div>
+            <div id="statusBadge" class="status-badge aberta">AGUARDANDO DADOS...</div>
             <div class="info-bar">Última atualização: <span id="lastUpdate">--:--:--</span></div>
         </div>
 
@@ -56,11 +60,23 @@
     </div>
 
     <script>
-        function atualizarTela() {
-            const dadosSalvos = localStorage.getItem('dadosApuracao');
-            if (!dadosSalvos) return;
+        // CONFIGURAÇÃO DO SEU FIREBASE
+        const firebaseConfig = {
+            apiKey: "SEU_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "SEU_APP_ID"
+        };
 
-            const data = JSON.parse(dadosSalvos);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('apuracao').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
 
             document.getElementById('lastUpdate').innerText = data.ultimaAtualizacao || '--';
             const votacaoAberta = data.status === 'ABERTA';
@@ -68,30 +84,30 @@
             badge.innerText = votacaoAberta ? 'EM APURAÇÃO' : 'VOTAÇÃO ENCERRADA';
             badge.className = 'status-badge ' + (votacaoAberta ? 'aberta' : 'fechada');
 
-            const c1 = data.cand1 || { nome: 'Candidato 1', foto: '', votos: 0 };
-            const c2 = data.cand2 || { nome: 'Candidato 2', foto: '', votos: 0 };
+            const candidatos = data.candidatos || [];
             const brancos = data.brancos || 0;
             const nulos = data.nulos || 0;
 
-            const totalValidos = c1.votos + c2.votos;
+            const totalValidos = candidatos.reduce((sum, c) => sum + (c.votos || 0), 0);
             const totalGeral = totalValidos + brancos + nulos;
 
             document.getElementById('votosBrancos').innerText = brancos;
             document.getElementById('votosNulos').innerText = nulos;
             document.getElementById('votosTotais').innerText = totalGeral;
 
-            const candidatos = [c1, c2];
-            let html = '';
+            candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
 
-            candidatos.forEach(c => {
-                const pctValidos = totalValidos > 0 ? ((c.votos / totalValidos) * 100).toFixed(2) : '0.00';
-                const temMaioria = c.votos > (totalValidos / 2) && totalValidos > 0;
+            let html = '';
+            candidatos.forEach((c) => {
+                const votosCand = c.votos || 0;
+                const pctValidos = totalValidos > 0 ? ((votosCand / totalValidos) * 100).toFixed(2) : '0.00';
+                const temMaioriaAbsoluta = votosCand > (totalValidos / 2) && totalValidos > 0;
 
                 let badgeStatus = '';
                 if (!votacaoAberta) {
-                    badgeStatus = temMaioria 
-                        ? '<span class="badge-eleito">ELEITO</span>' 
-                        : '<span class="badge-nao-eleito">NÃO ELEITO</span>';
+                    badgeStatus = temMaioriaAbsoluta 
+                        ? '<div class="badge-eleito">ELEITO</div>' 
+                        : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
                 }
 
                 const fotoUrl = c.foto || '[suspicious link removed]';
@@ -108,7 +124,7 @@
                             </div>
                             <div>
                                 <div class="pct-big">${pctValidos.replace('.', ',')}%</div>
-                                <div class="votos-qtd">${c.votos} votos válidos</div>
+                                <div class="votos-qtd">${votosCand} votos válidos</div>
                             </div>
                         </div>
                         <div class="progress-bg">
@@ -119,12 +135,7 @@
             });
 
             document.getElementById('candidatosContainer').innerHTML = html;
-        }
-
-        // Atualizar quando carregar e sempre que houver alteração no Admin
-        window.onload = atualizarTela;
-        window.addEventListener('storage', atualizarTela);
-        setInterval(atualizarTela, 1000); // Checagem contínua
+        });
     </script>
 </body>
 </html>
