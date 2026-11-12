@@ -11,7 +11,7 @@
         
         .header { text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 24px; }
         .header h1 { font-size: 24px; color: #0f172a; font-weight: 700; }
-        .header-badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+        .header-badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .status-badge { padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: 13px; }
         .aberta { background-color: #e0f2fe; color: #0369a1; }
         .fechada { background-color: #fee2e2; color: #b91c1c; }
@@ -38,9 +38,9 @@
         .chart-box { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 24px; }
         .chart-box h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
 
-        .rodapé-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
-        .rodapé-votos div { text-align: center; }
-        .rodapé-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
+        .rodape-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
+        .rodape-votos div { text-align: center; }
+        .rodape-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
     </style>
 
     <!-- Chart.js para o Gráfico de Linhas -->
@@ -62,16 +62,15 @@
 
         <div id="candidatosContainer"></div>
 
-        <div class="rodapé-votos">
+        <div class="rodape-votos">
             <div>Brancos<span id="votosBrancos">0</span></div>
             <div>Nulos<span id="votosNulos">0</span></div>
             <div>Total Apurado<span id="votosTotais">0</span></div>
         </div>
 
-        <!-- Gráfico de Evolução -->
         <div class="chart-box">
             <h3>Evolução dos Votos em Tempo Real</h3>
-            <canvas id="graficoEvolucao" height="180"></canvas>
+            <canvas id="graficoEvolucao" height="200"></canvas>
         </div>
     </div>
 
@@ -97,3 +96,124 @@
 
             const turno = data.turno || '1';
             document.getElementById('turnoBadge').innerText = turno === '1' ? '1º TURNO' : '2º TURNO';
+
+            const candidatos = (data.candidatos || []).slice();
+            const brancos = data.brancos || 0;
+            const nulos = data.nulos || 0;
+
+            const totalValidos = candidatos.reduce((sum, c) => sum + (c.votos || 0), 0);
+            const totalGeral = totalValidos + brancos + nulos;
+
+            document.getElementById('votosBrancos').innerText = brancos;
+            document.getElementById('votosNulos').innerText = nulos;
+            document.getElementById('votosTotais').innerText = totalGeral;
+
+            candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
+
+            let html = '';
+            candidatos.forEach((c, index) => {
+                const votosCand = c.votos || 0;
+                const pctValidos = totalValidos > 0 ? ((votosCand / totalValidos) * 100).toFixed(2) : '0.00';
+                
+                let badgeStatus = '';
+                if (!votacaoAberta) {
+                    if (turno === '1') {
+                        const temMaioriaAbsoluta = votosCand > (totalValidos / 2) && totalValidos > 0;
+                        if (temMaioriaAbsoluta) {
+                            badgeStatus = index === 0 ? '<div class="badge-eleito">ELEITO NO 1º TURNO</div>' : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
+                        } else {
+                            if (index === 0 || index === 1) {
+                                badgeStatus = '<div class="badge-2turno">VAI PARA O 2º TURNO</div>';
+                            } else {
+                                badgeStatus = '<div class="badge-nao-eleito">NÃO ELEITO</div>';
+                            }
+                        }
+                    } else {
+                        if (index === 0 && totalValidos > 0) {
+                            badgeStatus = '<div class="badge-eleito">ELEITO</div>';
+                        } else {
+                            badgeStatus = '<div class="badge-nao-eleito">NÃO ELEITO</div>';
+                        }
+                    }
+                }
+
+                const fotoUrl = c.foto || '[suspicious link removed]';
+
+                html += `
+                    <div class="card">
+                        <div class="cand-top">
+                            <div class="cand-info">
+                                <img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">
+                                <div>
+                                    <div class="cand-name">${c.nome}</div>
+                                    ${badgeStatus}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="pct-big">${pctValidos.replace('.', ',')}%</div>
+                                <div class="votos-qtd">${votosCand} votos válidos</div>
+                            </div>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-fill" style="width: ${pctValidos}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('candidatosContainer').innerHTML = html;
+            atualizarGrafico(data.historico || []);
+        }
+
+        function atualizarGrafico(historico) {
+            const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+            if (historico.length === 0) return;
+
+            const labels = historico.map(h => h.hora);
+            const nomesCandidatos = Object.keys(historico[0].votosPorCand || {});
+            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2'];
+
+            const datasets = nomesCandidatos.map((nome, idx) => {
+                return {
+                    label: nome,
+                    data: historico.map(h => (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0),
+                    borderColor: cores[idx % cores.length],
+                    backgroundColor: cores[idx % cores.length],
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointRadius: 4
+                };
+            });
+
+            if (meugrafico) {
+                meugrafico.data.labels = labels;
+                meugrafico.data.datasets = datasets;
+                meugrafico.update();
+            } else {
+                meugrafico = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: labels, datasets: datasets },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        if (usarFirebase) {
+            firebase.initializeApp(firebaseConfig);
+            firebase.database().ref('apuracao').on('value', snapshot => renderizar(snapshot.val()));
+        } else {
+            function carregarLocal() {
+                const salvas = localStorage.getItem('dadosApuracao');
+                if (salvas) renderizar(JSON.parse(salvas));
+            }
+            carregarLocal();
+            window.addEventListener('storage', carregarLocal);
+            setInterval(carregarLocal, 1000);
+        }
+    </script>
+</body>
+</html>
