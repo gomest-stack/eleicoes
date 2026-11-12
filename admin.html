@@ -39,9 +39,6 @@
             input { border: none !important; background: transparent !important; font-weight: bold; }
         }
     </style>
-
-    <script src="[suspicious link removed]"></script>
-    <script src="[suspicious link removed]"></script>
 </head>
 <body>
     <div class="admin-card">
@@ -74,21 +71,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "SEU_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
-            projectId: "SEU_PROJETO"
-        };
-
-        const usarFirebase = firebaseConfig.apiKey && firebaseConfig.apiKey !== "SEU_API_KEY";
-        let db = null;
-
-        if (usarFirebase) {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        }
-
         let statusAtual = 'ABERTA';
         let turnoAtual = '1';
         let historicoVotos = [];
@@ -97,6 +79,22 @@
             { id: 1, nome: 'Candidato A', foto: '', votos: 0 },
             { id: 2, nome: 'Candidato B', foto: '', votos: 0 }
         ];
+
+        function carregarDadosSalvos() {
+            const salvas = localStorage.getItem('dadosApuracao');
+            if (salvas) {
+                try {
+                    const data = JSON.parse(salvas);
+                    if (data.candidatos && data.candidatos.length > 0) candidatos = data.candidatos;
+                    if (data.status) statusAtual = data.status;
+                    if (data.turno) turnoAtual = data.turno;
+                    if (data.brancos !== undefined) document.getElementById('brancos').value = data.brancos;
+                    if (data.nulos !== undefined) document.getElementById('nulos').value = data.nulos;
+                    if (data.historico) historicoVotos = data.historico;
+                } catch(e) {}
+            }
+            renderizarFormulario();
+        }
 
         function renderizarFormulario() {
             document.getElementById('turnoInfo').innerText = `Fase Atual: ${turnoAtual}º TURNO (${statusAtual})`;
@@ -172,7 +170,7 @@
 
         function alternarTurno() {
             if (turnoAtual === '1') {
-                if (confirm('Deseja avançar para o 2º Turno? Isso selecionará automaticamente os 2 mais votados e zerará os votos para a nova votação.')) {
+                if (confirm('Deseja avançar para o 2º Turno? Isso selecionará automaticamente os 2 mais votados e zerará os votos para a nova etapa.')) {
                     candidatos.sort((a, b) => b.votos - a.votos);
                     candidatos = candidatos.slice(0, 2).map(c => ({ ...c, votos: 0 }));
                     turnoAtual = '2';
@@ -193,7 +191,6 @@
         function setStatus(novoStatus) {
             statusAtual = novoStatus;
             salvarApuracao();
-            alert('Status alterado para: ' + novoStatus);
         }
 
         function salvarApuracao() {
@@ -216,21 +213,15 @@
                 historico: historicoVotos
             };
 
-            if (usarFirebase && db) {
-                db.ref('apuracao').set(dados)
-                    .then(() => alert('Apuração enviada com sucesso para o Firebase!'))
-                    .catch(err => alert('Erro no Firebase: ' + err.message));
-            } else {
-                localStorage.setItem('dadosApuracao', JSON.stringify(dados));
-                alert('Apuração atualizada com sucesso!');
-            }
+            localStorage.setItem('dadosApuracao', JSON.stringify(dados));
+            alert('Apuração atualizada com sucesso!');
         }
 
         function imprimirBoletim() {
             window.print();
         }
 
-        renderizarFormulario();
+        carregarDadosSalvos();
     </script>
 </body>
 </html>
