@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador - Lançamento de Votos</title>
+    <title>Gerenciador - Lançamento de Votos (ADMIN)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f4f8; color: #1e293b; padding: 20px; }
-        .admin-card { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+        .admin-card { max-width: 650px; margin: 0 auto; background: #ffffff; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #0f172a; }
-        .control-btns { display: flex; gap: 12px; margin-bottom: 24px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        
+        .control-btns { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        button { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        
         .btn-open { background-color: #16a34a; color: white; }
         .btn-close { background-color: #dc2626; color: white; }
-        .btn-add { background-color: #d97706; color: white; margin-bottom: 18px; width: 100%; font-size: 15px; }
+        .btn-turno { background-color: #0288d1; color: white; width: 100%; margin-bottom: 16px; font-size: 14px; }
+        .btn-add { background-color: #d97706; color: white; margin-bottom: 16px; width: 100%; font-size: 15px; }
         .btn-remove { background-color: #ef4444; color: white; padding: 5px 12px; font-size: 12px; border-radius: 6px; float: right; }
-        .btn-save { background-color: #2563eb; color: white; width: 100%; margin-top: 20px; font-size: 16px; padding: 14px; }
-        
+        .btn-save { background-color: #2563eb; color: white; width: 100%; margin-top: 15px; font-size: 16px; padding: 14px; }
+        .btn-print { background-color: #475569; color: white; width: 100%; margin-top: 10px; font-size: 15px; padding: 12px; }
+
         .cand-box { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
         .cand-box-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .cand-box-header h3 { font-size: 16px; color: #0f172a; font-weight: 700; }
@@ -24,6 +29,15 @@
         label { display: block; margin-top: 10px; margin-bottom: 5px; font-size: 13px; color: #475569; font-weight: 600; }
         input[type="number"], input[type="text"], input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 14px; }
         .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-top: 10px; display: none; border: 3px solid #2563eb; }
+        
+        .badge-turno-info { text-align: center; font-weight: bold; color: #92400e; background: #fef3c7; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; }
+            .control-btns, .btn-add, .btn-save, .btn-print, .btn-turno, input[type="file"], .btn-remove { display: none !important; }
+            input { border: none !important; background: transparent !important; font-weight: bold; }
+        }
     </style>
 
     <script src="[suspicious link removed]"></script>
@@ -31,13 +45,16 @@
 </head>
 <body>
     <div class="admin-card">
-        <h1>Painel de Controle - Apuração</h1>
+        <h1>Painel de Gerenciamento - Apuração</h1>
+
+        <div id="turnoInfo" class="badge-turno-info">Fase Atual: 1º TURNO</div>
         
         <div class="control-btns">
             <button class="btn-open" onclick="setStatus('ABERTA')">Abrir Votação</button>
             <button class="btn-close" onclick="setStatus('FECHADA')">Encerrar Votação</button>
         </div>
 
+        <button type="button" class="btn-turno" onclick="alternarTurno()">🔄 Alternar / Avançar para 2º Turno</button>
         <button type="button" class="btn-add" onclick="adicionarCandidato()">+ Adicionar Novo Candidato</button>
 
         <form id="adminForm">
@@ -51,7 +68,8 @@
                 <input type="number" id="nulos" value="0" min="0">
             </div>
 
-            <button type="button" class="btn-save" onclick="salvarApuracao()">Atualizar Apuração</button>
+            <button type="button" class="btn-save" onclick="salvarApuracao()">Atualizar Apuração (Lançar Votos)</button>
+            <button type="button" class="btn-print" onclick="imprimirBoletim()">📄 Imprimir Boletim de Apuração</button>
         </form>
     </div>
 
@@ -63,7 +81,7 @@
             projectId: "SEU_PROJETO"
         };
 
-        const usarFirebase = firebaseConfig.apiKey !== "SEU_API_KEY";
+        const usarFirebase = firebaseConfig.apiKey && firebaseConfig.apiKey !== "SEU_API_KEY";
         let db = null;
 
         if (usarFirebase) {
@@ -72,12 +90,16 @@
         }
 
         let statusAtual = 'ABERTA';
+        let turnoAtual = '1';
+        let historicoVotos = [];
+
         let candidatos = [
             { id: 1, nome: 'Candidato A', foto: '', votos: 0 },
             { id: 2, nome: 'Candidato B', foto: '', votos: 0 }
         ];
 
         function renderizarFormulario() {
+            document.getElementById('turnoInfo').innerText = `Fase Atual: ${turnoAtual}º TURNO (${statusAtual})`;
             const container = document.getElementById('listaCandidatos');
             container.innerHTML = '';
 
@@ -92,8 +114,8 @@
                     <label>Nome do Candidato:</label>
                     <input type="text" value="${cand.nome}" onchange="candidatos[${index}].nome = this.value">
                     
-                    <label>Foto do Candidato (Selecione um arquivo):</label>
-                    <input type="file" accept="image/*" onchange="carregarFoto(event, ${index})">
+                    <label>Foto (Arquivo do Computador/Celular):</label>
+                    <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
                     <img id="preview-${index}" src="${cand.foto}" class="preview-img" style="display:${cand.foto ? 'block' : 'none'}">
 
                     <label>Votos Acumulados:</label>
@@ -103,18 +125,39 @@
             });
         }
 
-        function carregarFoto(event, index) {
+        function carregarEComprimirFoto(event, index) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    candidatos[index].foto = e.target.result;
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxDim = 150;
+
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxDim) { h *= maxDim / w; w = maxDim; }
+                    } else {
+                        if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+                    }
+
+                    canvas.width = w;
+                    canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    candidatos[index].foto = compressedBase64;
                     const preview = document.getElementById(`preview-${index}`);
-                    preview.src = e.target.result;
+                    preview.src = compressedBase64;
                     preview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         function adicionarCandidato() {
@@ -127,31 +170,64 @@
             renderizarFormulario();
         }
 
+        function alternarTurno() {
+            if (turnoAtual === '1') {
+                if (confirm('Deseja avançar para o 2º Turno? Isso selecionará automaticamente os 2 mais votados e zerará os votos para a nova votação.')) {
+                    candidatos.sort((a, b) => b.votos - a.votos);
+                    candidatos = candidatos.slice(0, 2).map(c => ({ ...c, votos: 0 }));
+                    turnoAtual = '2';
+                    statusAtual = 'ABERTA';
+                    historicoVotos = [];
+                    renderizarFormulario();
+                    salvarApuracao();
+                }
+            } else {
+                if (confirm('Voltar para o 1º Turno?')) {
+                    turnoAtual = '1';
+                    renderizarFormulario();
+                    salvarApuracao();
+                }
+            }
+        }
+
         function setStatus(novoStatus) {
             statusAtual = novoStatus;
             salvarApuracao();
+            alert('Status alterado para: ' + novoStatus);
         }
 
         function salvarApuracao() {
             const agora = new Date();
-            const dataHora = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR');
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dataHoraFull = agora.toLocaleDateString('pt-BR') + ' às ' + horaFormatada;
+
+            const votosMap = {};
+            candidatos.forEach(c => { votosMap[c.nome] = c.votos; });
+
+            historicoVotos.push({ hora: horaFormatada, votosPorCand: votosMap });
 
             const dados = {
                 status: statusAtual,
-                ultimaAtualizacao: dataHora,
+                turno: turnoAtual,
+                ultimaAtualizacao: dataHoraFull,
                 candidatos: candidatos,
                 brancos: parseInt(document.getElementById('brancos').value) || 0,
-                nulos: parseInt(document.getElementById('nulos').value) || 0
+                nulos: parseInt(document.getElementById('nulos').value) || 0,
+                historico: historicoVotos
             };
 
             if (usarFirebase && db) {
                 db.ref('apuracao').set(dados)
-                    .then(() => alert('Enviado com sucesso via Firebase!'))
-                    .catch(err => alert('Erro: ' + err.message));
+                    .then(() => alert('Apuração enviada com sucesso para o Firebase!'))
+                    .catch(err => alert('Erro no Firebase: ' + err.message));
             } else {
                 localStorage.setItem('dadosApuracao', JSON.stringify(dados));
-                alert('Apuração salva localmente!');
+                alert('Apuração atualizada com sucesso!');
             }
+        }
+
+        function imprimirBoletim() {
+            window.print();
         }
 
         renderizarFormulario();
