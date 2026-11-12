@@ -3,40 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divulgação de Resultados - Apuração</title>
+    <title>Apuração Oficial - Resultados</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f4f8; color: #1e293b; padding: 20px; }
-        .container { max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+        .container { max-width: 700px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         
         .header { text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 24px; }
-        .header h1 { font-size: 24px; color: #0f172a; font-weight: 700; letter-spacing: -0.5px; }
-        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-top: 10px; }
+        .header h1 { font-size: 24px; color: #0f172a; font-weight: 700; }
+        .header-badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+        .status-badge { padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: 13px; }
         .aberta { background-color: #e0f2fe; color: #0369a1; }
         .fechada { background-color: #fee2e2; color: #b91c1c; }
+        .turno-badge { background-color: #fef3c7; color: #92400e; padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: 13px; }
         .info-bar { font-size: 13px; color: #64748b; text-align: center; margin-top: 8px; }
 
-        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
         .cand-top { display: flex; align-items: center; justify-content: space-between; }
         .cand-info { display: flex; align-items: center; gap: 16px; }
         
-        .cand-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); background-color: #f8fafc; }
+        .cand-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); background-color: #f8fafc; }
         .cand-name { font-size: 19px; font-weight: 700; color: #0f172a; }
 
         .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; }
+        .badge-2turno { background-color: #0288d1; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; }
         .badge-nao-eleito { background-color: #94a3b8; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 4px; display: inline-block; }
 
         .pct-big { font-size: 28px; font-weight: 800; color: #2563eb; text-align: right; line-height: 1; }
-        .votos-qtd { font-size: 13px; color: #64748b; text-align: right; margin-top: 4px; font-weight: 500; }
+        .votos-qtd { font-size: 13px; color: #64748b; text-align: right; margin-top: 4px; }
 
         .progress-bg { background: #f1f5f9; height: 14px; border-radius: 7px; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 7px; }
 
-        .rodapé-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 24px; border: 1px solid #e2e8f0; color: #475569; }
+        .chart-box { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 24px; }
+        .chart-box h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
+
+        .rodapé-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
         .rodapé-votos div { text-align: center; }
         .rodapé-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
     </style>
 
+    <!-- Chart.js para o Gráfico de Linhas -->
+    <script src="[suspicious link removed]"></script>
+    <!-- Firebase SDK -->
     <script src="[suspicious link removed]"></script>
     <script src="[suspicious link removed]"></script>
 </head>
@@ -44,7 +53,10 @@
     <div class="container">
         <div class="header">
             <h1>Eleições - Apuração Oficial</h1>
-            <div id="statusBadge" class="status-badge aberta">AGUARDANDO DADOS...</div>
+            <div class="header-badges">
+                <div id="statusBadge" class="status-badge aberta">AGUARDANDO DADOS...</div>
+                <div id="turnoBadge" class="turno-badge">1º TURNO</div>
+            </div>
             <div class="info-bar">Última atualização: <span id="lastUpdate">--:--:--</span></div>
         </div>
 
@@ -54,6 +66,12 @@
             <div>Brancos<span id="votosBrancos">0</span></div>
             <div>Nulos<span id="votosNulos">0</span></div>
             <div>Total Apurado<span id="votosTotais">0</span></div>
+        </div>
+
+        <!-- Gráfico de Evolução -->
+        <div class="chart-box">
+            <h3>Evolução dos Votos em Tempo Real</h3>
+            <canvas id="graficoEvolucao" height="180"></canvas>
         </div>
     </div>
 
@@ -65,7 +83,8 @@
             projectId: "SEU_PROJETO"
         };
 
-        const usarFirebase = firebaseConfig.apiKey !== "SEU_API_KEY";
+        const usarFirebase = firebaseConfig.apiKey && firebaseConfig.apiKey !== "SEU_API_KEY";
+        let meugrafico = null;
 
         function renderizar(data) {
             if (!data) return;
@@ -76,72 +95,5 @@
             badge.innerText = votacaoAberta ? 'EM APURAÇÃO' : 'VOTAÇÃO ENCERRADA';
             badge.className = 'status-badge ' + (votacaoAberta ? 'aberta' : 'fechada');
 
-            const candidatos = data.candidatos || [];
-            const brancos = data.brancos || 0;
-            const nulos = data.nulos || 0;
-
-            const totalValidos = candidatos.reduce((sum, c) => sum + (c.votos || 0), 0);
-            const totalGeral = totalValidos + brancos + nulos;
-
-            document.getElementById('votosBrancos').innerText = brancos;
-            document.getElementById('votosNulos').innerText = nulos;
-            document.getElementById('votosTotais').innerText = totalGeral;
-
-            candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
-
-            let html = '';
-            candidatos.forEach((c) => {
-                const votosCand = c.votos || 0;
-                const pctValidos = totalValidos > 0 ? ((votosCand / totalValidos) * 100).toFixed(2) : '0.00';
-                const temMaioria = votosCand > (totalValidos / 2) && totalValidos > 0;
-
-                let badgeStatus = '';
-                if (!votacaoAberta) {
-                    badgeStatus = temMaioria 
-                        ? '<div class="badge-eleito">ELEITO</div>' 
-                        : '<div class="badge-nao-eleito">NÃO ELEITO</div>';
-                }
-
-                const fotoUrl = c.foto || '[suspicious link removed]';
-
-                html += `
-                    <div class="card">
-                        <div class="cand-top">
-                            <div class="cand-info">
-                                <img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">
-                                <div>
-                                    <div class="cand-name">${c.nome}</div>
-                                    ${badgeStatus}
-                                </div>
-                            </div>
-                            <div>
-                                <div class="pct-big">${pctValidos.replace('.', ',')}%</div>
-                                <div class="votos-qtd">${votosCand} votos válidos</div>
-                            </div>
-                        </div>
-                        <div class="progress-bg">
-                            <div class="progress-fill" style="width: ${pctValidos}%"></div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('candidatosContainer').innerHTML = html;
-        }
-
-        if (usarFirebase) {
-            firebase.initializeApp(firebaseConfig);
-            firebase.database().ref('apuracao').on('value', snapshot => renderizar(snapshot.val()));
-        } else {
-            // Funciona no computador local sem travar
-            function carregarLocal() {
-                const salvas = localStorage.getItem('dadosApuracao');
-                if (salvas) renderizar(JSON.parse(salvas));
-            }
-            carregarLocal();
-            window.addEventListener('storage', carregarLocal);
-            setInterval(carregarLocal, 1000);
-        }
-    </script>
-</body>
-</html>
+            const turno = data.turno || '1';
+            document.getElementById('turnoBadge').innerText = turno === '1' ? '1º TURNO' : '2º TURNO';
