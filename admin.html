@@ -21,6 +21,7 @@
         .btn-remove { background-color: #ef4444; color: white; padding: 5px 12px; font-size: 12px; border-radius: 6px; float: right; }
         .btn-save { background-color: #2563eb; color: white; width: 100%; margin-top: 15px; font-size: 16px; padding: 14px; }
         .btn-print { background-color: #475569; color: white; width: 100%; margin-top: 10px; font-size: 15px; padding: 12px; }
+        .btn-reset { background-color: #991b1b; color: white; width: 100%; margin-top: 10px; font-size: 14px; padding: 10px; }
 
         .cand-box { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
         .cand-box-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
@@ -32,17 +33,23 @@
         
         .badge-turno-info { text-align: center; font-weight: bold; color: #92400e; background: #fef3c7; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
 
+        .chart-box-admin { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px; }
+        .chart-box-admin h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
+
+        /* Estilo para Impressão do Boletim Oficial de Urna */
         @media print {
             body { background: white; padding: 0; }
-            .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; }
-            .control-btns, .btn-add, .btn-save, .btn-print, .btn-turno, input[type="file"], .btn-remove { display: none !important; }
-            input { border: none !important; background: transparent !important; font-weight: bold; }
+            .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
+            .control-btns, .btn-add, .btn-save, .btn-print, .btn-reset, .btn-turno, input[type="file"], .btn-remove { display: none !important; }
+            input { border: none !important; background: transparent !important; font-weight: bold; font-size: 16px !important; }
+            .cand-box { border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
+            .chart-box-admin { page-break-inside: avoid; margin-top: 30px; border: 1px solid #cbd5e1; }
         }
     </style>
 </head>
 <body>
     <div class="admin-card">
-        <h1>Painel de Gerenciamento - Apuração</h1>
+        <h1>Boletim de Apuração - Painel de Controle</h1>
 
         <div id="turnoInfo" class="badge-turno-info">Fase Atual: 1º TURNO</div>
         
@@ -65,8 +72,15 @@
                 <input type="number" id="nulos" value="0" min="0">
             </div>
 
+            <!-- Gráfico de Evolução visível no Admin e no Boletim Impresso -->
+            <div class="chart-box-admin">
+                <h3>Evolução dos Votos (Boletim de Urna)</h3>
+                <canvas id="graficoAdmin" style="width: 100%; height: 220px;"></canvas>
+            </div>
+
             <button type="button" class="btn-save" onclick="salvarApuracao()">Atualizar Apuração (Lançar Votos)</button>
-            <button type="button" class="btn-print" onclick="imprimirBoletim()">📄 Imprimir Boletim de Apuração</button>
+            <button type="button" class="btn-print" onclick="imprimirBoletim()">📄 Imprimir Boletim de Apuração (Com Gráfico)</button>
+            <button type="button" class="btn-reset" onclick="zerarSistema()">⚠️ Zerar / Encerrar Eleição (Limpar Tudo)</button>
         </form>
     </div>
 
@@ -121,6 +135,8 @@
                 `;
                 container.appendChild(box);
             });
+
+            desenharGraficoAdmin(historicoVotos);
         }
 
         function carregarEComprimirFoto(event, index) {
@@ -214,11 +230,158 @@
             };
 
             localStorage.setItem('dadosApuracao', JSON.stringify(dados));
+            renderizarFormulario();
             alert('Apuração atualizada com sucesso!');
+        }
+
+        function zerarSistema() {
+            if (confirm('⚠️ ATENÇÃO: Deseja realmente ZERAR toda a eleição?\n\nIsso apagará todos os votos, histórico do gráfico e redefinirá os candidatos para o início.')) {
+                if (confirm('Confirmação Final: Todos os dados acumulados serão apagados permanentemente. Continuar?')) {
+                    statusAtual = 'ABERTA';
+                    turnoAtual = '1';
+                    historicoVotos = [];
+                    candidatos = [
+                        { id: 1, nome: 'Candidato A', foto: '', votos: 0 },
+                        { id: 2, nome: 'Candidato B', foto: '', votos: 0 }
+                    ];
+                    document.getElementById('brancos').value = 0;
+                    document.getElementById('nulos').value = 0;
+
+                    const dadosLimpos = {
+                        status: statusAtual,
+                        turno: turnoAtual,
+                        ultimaAtualizacao: 'Sistema Zerado',
+                        candidatos: candidatos,
+                        brancos: 0,
+                        nulos: 0,
+                        historico: []
+                    };
+
+                    localStorage.setItem('dadosApuracao', JSON.stringify(dadosLimpos));
+                    renderizarFormulario();
+                    alert('Sistema zerado com sucesso! A eleição pode recomeçar.');
+                }
+            }
         }
 
         function imprimirBoletim() {
             window.print();
+        }
+
+        function desenharGraficoAdmin(historico) {
+            const canvas = document.getElementById('graficoAdmin');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth - 36 || 600;
+            canvas.height = 220;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!historico || historico.length === 0) {
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Segoe UI, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Nenhum histórico registrado para o Boletim ainda.', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const candidatosSet = new Set();
+            historico.forEach(h => {
+                if (h.votosPorCand) {
+                    Object.keys(h.votosPorCand).forEach(nome => candidatosSet.add(nome));
+                }
+            });
+            const nomesCandidatos = Array.from(candidatosSet);
+            if (nomesCandidatos.length === 0) return;
+
+            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
+
+            let maxVotos = 1;
+            historico.forEach(h => {
+                if (h.votosPorCand) {
+                    Object.values(h.votosPorCand).forEach(v => {
+                        if (v > maxVotos) maxVotos = v;
+                    });
+                }
+            });
+
+            const paddingLeft = 45;
+            const paddingRight = 20;
+            const paddingTop = 35;
+            const paddingBottom = 35;
+            const width = canvas.width - paddingLeft - paddingRight;
+            const height = canvas.height - paddingTop - paddingBottom;
+
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Segoe UI, sans-serif';
+            ctx.textAlign = 'right';
+
+            const gridLines = 4;
+            for (let i = 0; i <= gridLines; i++) {
+                const yVal = Math.round((maxVotos / gridLines) * i);
+                const yPos = paddingTop + height - (i / gridLines) * height;
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yPos);
+                ctx.lineTo(paddingLeft + width, yPos);
+                ctx.stroke();
+
+                ctx.fillText(yVal, paddingLeft - 8, yPos + 4);
+            }
+
+            let legendX = paddingLeft;
+            ctx.textAlign = 'left';
+            nomesCandidatos.forEach((nome, idx) => {
+                const cor = cores[idx % cores.length];
+                ctx.fillStyle = cor;
+                ctx.fillRect(legendX, 10, 12, 12);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 12px Segoe UI, sans-serif';
+                ctx.fillText(nome, legendX + 16, 20);
+                legendX += ctx.measureText(nome).width + 35;
+            });
+
+            const totalPontos = historico.length;
+            const stepX = totalPontos > 1 ? width / (totalPontos - 1) : width / 2;
+
+            nomesCandidatos.forEach((nome, idx) => {
+                const cor = cores[idx % cores.length];
+                ctx.strokeStyle = cor;
+                ctx.fillStyle = cor;
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                historico.forEach((h, i) => {
+                    const votos = (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0;
+                    const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                    const y = paddingTop + height - ((votos / maxVotos) * height);
+
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                historico.forEach((h, i) => {
+                    const votos = (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0;
+                    const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                    const y = paddingTop + height - ((votos / maxVotos) * height);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            historico.forEach((h, i) => {
+                const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
+                ctx.fillText(h.hora || '', x, canvas.height - 8);
+            });
         }
 
         carregarDadosSalvos();
