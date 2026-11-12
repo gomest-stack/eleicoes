@@ -36,7 +36,6 @@
         .chart-box-admin { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px; }
         .chart-box-admin h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
 
-        /* Estilo para Impressão do Boletim Oficial de Urna */
         @media print {
             body { background: white; padding: 0; }
             .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
@@ -62,6 +61,13 @@
         <button type="button" class="btn-add" onclick="adicionarCandidato()">+ Adicionar Novo Candidato</button>
 
         <form id="adminForm">
+            <!-- Dados Gerais do Eleitorado -->
+            <div class="cand-box">
+                <h3>Dados Globais da Eleição</h3>
+                <label>Total de Eleitores Aptos (Esperados):</label>
+                <input type="number" id="totalEleitores" value="0" min="0" placeholder="Ex: 500">
+            </div>
+
             <div id="listaCandidatos"></div>
 
             <div class="cand-box">
@@ -72,7 +78,6 @@
                 <input type="number" id="nulos" value="0" min="0">
             </div>
 
-            <!-- Gráfico de Evolução visível no Admin e no Boletim Impresso -->
             <div class="chart-box-admin">
                 <h3>Evolução dos Votos (Boletim de Urna)</h3>
                 <canvas id="graficoAdmin" style="width: 100%; height: 220px;"></canvas>
@@ -99,6 +104,7 @@
             if (salvas) {
                 try {
                     const data = JSON.parse(salvas);
+                    if (data.totalEleitores !== undefined) document.getElementById('totalEleitores').value = data.totalEleitores;
                     if (data.candidatos && data.candidatos.length > 0) candidatos = data.candidatos;
                     if (data.status) statusAtual = data.status;
                     if (data.turno) turnoAtual = data.turno;
@@ -140,7 +146,7 @@
         }
 
         function carregarEComprimirFoto(event, index) {
-            const file = event.target.files[0];
+            const file = event.target.files;
             if (!file) return;
 
             const reader = new FileReader();
@@ -223,6 +229,7 @@
                 status: statusAtual,
                 turno: turnoAtual,
                 ultimaAtualizacao: dataHoraFull,
+                totalEleitores: parseInt(document.getElementById('totalEleitores').value) || 0,
                 candidatos: candidatos,
                 brancos: parseInt(document.getElementById('brancos').value) || 0,
                 nulos: parseInt(document.getElementById('nulos').value) || 0,
@@ -244,6 +251,7 @@
                         { id: 1, nome: 'Candidato A', foto: '', votos: 0 },
                         { id: 2, nome: 'Candidato B', foto: '', votos: 0 }
                     ];
+                    document.getElementById('totalEleitores').value = 0;
                     document.getElementById('brancos').value = 0;
                     document.getElementById('nulos').value = 0;
 
@@ -251,6 +259,7 @@
                         status: statusAtual,
                         turno: turnoAtual,
                         ultimaAtualizacao: 'Sistema Zerado',
+                        totalEleitores: 0,
                         candidatos: candidatos,
                         brancos: 0,
                         nulos: 0,
