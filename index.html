@@ -41,6 +41,11 @@
         .rodape-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
         .rodape-votos div { text-align: center; }
         .rodape-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { border: none; box-shadow: none; max-width: 100%; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -92,10 +97,8 @@
             document.getElementById('votosNulos').innerText = nulos;
             document.getElementById('votosTotais').innerText = totalGeral;
 
-            // Ordenar do mais votado para o menos votado
             candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
 
-            // Regra do 1º Turno: Verifica se o 1º colocado tem mais de 50% dos votos válidos
             const alguemEleito1Turno = totalValidos > 0 && candidatos[0] && candidatos[0].votos > (totalValidos / 2);
 
             let html = '';
@@ -150,7 +153,6 @@
             desenharGrafico(data.historico || []);
         }
 
-        // Desenhar o Gráfico em Canvas Nativo (Zero dependências externas)
         function desenharGrafico(historico) {
             const canvas = document.getElementById('graficoEvolucao');
             if (!canvas) return;
@@ -196,7 +198,6 @@
             const width = canvas.width - paddingLeft - paddingRight;
             const height = canvas.height - paddingTop - paddingBottom;
 
-            // Linhas de Grade e Escala Y
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1;
             ctx.fillStyle = '#64748b';
@@ -216,7 +217,6 @@
                 ctx.fillText(yVal, paddingLeft - 8, yPos + 4);
             }
 
-            // Legenda no Topo
             let legendX = paddingLeft;
             ctx.textAlign = 'left';
             nomesCandidatos.forEach((nome, idx) => {
@@ -229,7 +229,6 @@
                 legendX += ctx.measureText(nome).width + 35;
             });
 
-            // Traçar Linhas de Evolução
             const totalPontos = historico.length;
             const stepX = totalPontos > 1 ? width / (totalPontos - 1) : width / 2;
 
@@ -250,7 +249,6 @@
                 });
                 ctx.stroke();
 
-                // Desenhar os Pontos
                 historico.forEach((h, i) => {
                     const votos = (h.votosPorCand && h.votosPorCand[nome] !== undefined) ? h.votosPorCand[nome] : 0;
                     const x = totalPontos > 1 ? paddingLeft + (i * stepX) : paddingLeft + width / 2;
@@ -262,7 +260,6 @@
                 });
             });
 
-            // Horários no Eixo X
             ctx.fillStyle = '#64748b';
             ctx.font = '11px Segoe UI, sans-serif';
             ctx.textAlign = 'center';
