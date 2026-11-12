@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f4f8; color: #1e293b; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+        .container { max-width: 720px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         
         .header { text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 24px; }
         .header h1 { font-size: 24px; color: #0f172a; font-weight: 700; }
@@ -35,12 +35,16 @@
         .progress-bg { background: #f1f5f9; height: 14px; border-radius: 7px; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 7px; }
 
+        /* Painel de Estatísticas Gerais e Abstenção */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 20px; border: 1px solid #e2e8f0; text-align: center; }
+        .stats-item { background: #ffffff; padding: 12px 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .stats-item label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; display: block; }
+        .stats-item span { display: block; font-weight: 700; font-size: 16px; color: #0f172a; margin-top: 4px; }
+        .highlight-abstencao { border-color: #fca5a5; background: #fff5f5; }
+        .highlight-abstencao span { color: #dc2626; }
+
         .chart-box { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 24px; }
         .chart-box h3 { font-size: 15px; color: #0f172a; margin-bottom: 14px; text-align: center; }
-
-        .rodape-votos { display: flex; justify-content: space-around; background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 13px; margin-top: 20px; border: 1px solid #e2e8f0; color: #475569; }
-        .rodape-votos div { text-align: center; }
-        .rodape-votos span { display: block; font-weight: 700; font-size: 18px; color: #0f172a; margin-top: 4px; }
 
         @media print {
             body { background: white; padding: 0; }
@@ -61,10 +65,28 @@
 
         <div id="candidatosContainer"></div>
 
-        <div class="rodape-votos">
-            <div>Brancos<span id="votosBrancos">0</span></div>
-            <div>Nulos<span id="votosNulos">0</span></div>
-            <div>Total Apurado<span id="votosTotais">0</span></div>
+        <!-- Estatísticas Gerais / Eleitores / Abstenção -->
+        <div class="stats-grid">
+            <div class="stats-item">
+                <label>Eleitores Aptos</label>
+                <span id="totalEleitoresView">0</span>
+            </div>
+            <div class="stats-item">
+                <label>Comparecimento</label>
+                <span id="comparecimentoView">0 (0,00%)</span>
+            </div>
+            <div class="stats-item highlight-abstencao">
+                <label>Abstenção</label>
+                <span id="abstencaoView">0 (0,00%)</span>
+            </div>
+            <div class="stats-item">
+                <label>Brancos</label>
+                <span id="votosBrancos">0</span>
+            </div>
+            <div class="stats-item">
+                <label>Nulos</label>
+                <span id="votosNulos">0</span>
+            </div>
         </div>
 
         <div class="chart-box">
@@ -86,6 +108,7 @@
             const turno = data.turno || '1';
             document.getElementById('turnoBadge').innerText = turno === '1' ? '1º TURNO' : '2º TURNO';
 
+            const totalEleitores = data.totalEleitores || 0;
             const candidatos = (data.candidatos || []).slice();
             const brancos = data.brancos || 0;
             const nulos = data.nulos || 0;
@@ -93,9 +116,16 @@
             const totalValidos = candidatos.reduce((sum, c) => sum + (c.votos || 0), 0);
             const totalGeral = totalValidos + brancos + nulos;
 
+            // Cálculos de Abstenção e Comparecimento
+            const abstencaoQtd = Math.max(0, totalEleitores - totalGeral);
+            const pctComparecimento = totalEleitores > 0 ? ((totalGeral / totalEleitores) * 100).toFixed(2) : '0.00';
+            const pctAbstencao = totalEleitores > 0 ? ((abstencaoQtd / totalEleitores) * 100).toFixed(2) : '0.00';
+
+            document.getElementById('totalEleitoresView').innerText = totalEleitores;
+            document.getElementById('comparecimentoView').innerText = `${totalGeral} (${pctComparecimento.replace('.', ',')}%)`;
+            document.getElementById('abstencaoView').innerText = `${abstencaoQtd} (${pctAbstencao.replace('.', ',')}%)`;
             document.getElementById('votosBrancos').innerText = brancos;
             document.getElementById('votosNulos').innerText = nulos;
-            document.getElementById('votosTotais').innerText = totalGeral;
 
             candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
 
