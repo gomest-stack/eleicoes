@@ -10,8 +10,7 @@
         .admin-card { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #0f172a; }
         .control-btns { display: flex; gap: 12px; margin-bottom: 24px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
         .btn-open { background-color: #16a34a; color: white; }
         .btn-close { background-color: #dc2626; color: white; }
         .btn-add { background-color: #d97706; color: white; margin-bottom: 18px; width: 100%; font-size: 15px; }
@@ -24,10 +23,9 @@
         
         label { display: block; margin-top: 10px; margin-bottom: 5px; font-size: 13px; color: #475569; font-weight: 600; }
         input[type="number"], input[type="text"], input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 14px; }
-        .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-top: 10px; display: none; border: 3px solid #2563eb; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-top: 10px; display: none; border: 3px solid #2563eb; }
     </style>
 
-    <!-- Firebase SDK -->
     <script src="[suspicious link removed]"></script>
     <script src="[suspicious link removed]"></script>
 </head>
@@ -53,24 +51,25 @@
                 <input type="number" id="nulos" value="0" min="0">
             </div>
 
-            <button type="button" class="btn-save" onclick="salvarApuracao()">Atualizar Apuração (Enviar para Todos)</button>
+            <button type="button" class="btn-save" onclick="salvarApuracao()">Atualizar Apuração</button>
         </form>
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
             apiKey: "SEU_API_KEY",
             authDomain: "SEU_PROJETO.firebaseapp.com",
             databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "SEU_APP_ID"
+            projectId: "SEU_PROJETO"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const usarFirebase = firebaseConfig.apiKey !== "SEU_API_KEY";
+        let db = null;
+
+        if (usarFirebase) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        }
 
         let statusAtual = 'ABERTA';
         let candidatos = [
@@ -93,7 +92,7 @@
                     <label>Nome do Candidato:</label>
                     <input type="text" value="${cand.nome}" onchange="candidatos[${index}].nome = this.value">
                     
-                    <label>Selecione a Foto do Dispositivo:</label>
+                    <label>Foto do Candidato (Selecione um arquivo):</label>
                     <input type="file" accept="image/*" onchange="carregarFoto(event, ${index})">
                     <img id="preview-${index}" src="${cand.foto}" class="preview-img" style="display:${cand.foto ? 'block' : 'none'}">
 
@@ -131,7 +130,6 @@
         function setStatus(novoStatus) {
             statusAtual = novoStatus;
             salvarApuracao();
-            alert('Status alterado para: ' + novoStatus);
         }
 
         function salvarApuracao() {
@@ -146,9 +144,14 @@
                 nulos: parseInt(document.getElementById('nulos').value) || 0
             };
 
-            db.ref('apuracao').set(dados)
-                .then(() => alert('Apuração enviada com sucesso!'))
-                .catch(err => alert('Erro ao salvar no Firebase: ' + err.message));
+            if (usarFirebase && db) {
+                db.ref('apuracao').set(dados)
+                    .then(() => alert('Enviado com sucesso via Firebase!'))
+                    .catch(err => alert('Erro: ' + err.message));
+            } else {
+                localStorage.setItem('dadosApuracao', JSON.stringify(dados));
+                alert('Apuração salva localmente!');
+            }
         }
 
         renderizarFormulario();
