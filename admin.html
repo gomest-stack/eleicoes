@@ -29,8 +29,11 @@
         
         label { display: block; margin-top: 10px; margin-bottom: 5px; font-size: 13px; color: #475569; font-weight: 600; }
         input[type="number"], input[type="text"], input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 14px; }
-        .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-top: 10px; display: none; border: 3px solid #2563eb; }
         
+        .photo-area { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+        .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .photo-status { font-size: 12px; font-weight: 600; color: #16a34a; }
+
         .badge-turno-info { text-align: center; font-weight: bold; color: #92400e; background: #fef3c7; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
 
         .chart-box-admin { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px; }
@@ -123,20 +126,30 @@
             candidatos.forEach((cand, index) => {
                 const box = document.createElement('div');
                 box.className = 'cand-box';
+                const temFoto = cand.foto && cand.foto.length > 0;
+                
                 box.innerHTML = `
                     <div class="cand-box-header">
                         <h3>Candidato ${index + 1}</h3>
                         ${candidatos.length > 2 ? `<button type="button" class="btn-remove" onclick="removerCandidato(${index})">Remover</button>` : ''}
                     </div>
                     <label>Nome do Candidato:</label>
-                    <input type="text" value="${cand.nome}" onchange="candidatos[${index}].nome = this.value">
+                    <input type="text" id="nome-cand-${index}" value="${cand.nome}">
                     
-                    <label>Foto do Candidato:</label>
+                    <label>Foto do Candidato (Selecione da galeria/PC):</label>
                     <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
-                    <img id="preview-${index}" src="${cand.foto}" class="preview-img" style="display:${cand.foto ? 'block' : 'none'}">
+                    
+                    <div class="photo-area">
+                        ${temFoto 
+                            ? `<img id="preview-${index}" src="${cand.foto}" class="preview-img">` 
+                            : `<div id="preview-${index}" class="preview-img">👤</div>`}
+                        <span id="photo-status-${index}" class="photo-status">
+                            ${temFoto ? '✓ Foto salva no sistema' : 'Nenhuma foto selecionada'}
+                        </span>
+                    </div>
 
                     <label>Votos Acumulados:</label>
-                    <input type="number" value="${cand.votos}" min="0" onchange="candidatos[${index}].votos = parseInt(this.value) || 0">
+                    <input type="number" id="votos-cand-${index}" value="${cand.votos}" min="0">
                 `;
                 container.appendChild(box);
             });
@@ -145,7 +158,7 @@
         }
 
         function carregarEComprimirFoto(event, index) {
-            const file = event.target.files[0];
+            const file = event.target.files && event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
@@ -154,7 +167,7 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const maxDim = 120; // Otimização extrema para não lotar o localStorage
+                    const maxDim = 120;
 
                     let w = img.width;
                     let h = img.height;
@@ -168,28 +181,56 @@
                     canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
 
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
                     candidatos[index].foto = compressedBase64;
+                    
                     const preview = document.getElementById(`preview-${index}`);
-                    preview.src = compressedBase64;
-                    preview.style.display = 'block';
+                    const statusText = document.getElementById(`photo-status-${index}`);
+                    
+                    if (preview) {
+                        if (preview.tagName === 'IMG') {
+                            preview.src = compressedBase64;
+                        } else {
+                            const newImg = document.createElement('img');
+                            newImg.id = `preview-${index}`;
+                            newImg.className = 'preview-img';
+                            newImg.src = compressedBase64;
+                            preview.parentNode.replaceChild(newImg, preview);
+                        }
+                    }
+                    if (statusText) {
+                        statusText.innerText = '✓ Foto processada! Clique em Salvar.';
+                        statusText.style.color = '#16a34a';
+                    }
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
+        function sincronizarCamposDigitados() {
+            candidatos.forEach((cand, index) => {
+                const elNome = document.getElementById(`nome-cand-${index}`);
+                const elVotos = document.getElementById(`votos-cand-${index}`);
+                if (elNome) cand.nome = elNome.value;
+                if (elVotos) cand.votos = parseInt(elVotos.value) || 0;
+            });
+        }
+
         function adicionarCandidato() {
+            sincronizarCamposDigitados();
             candidatos.push({ id: Date.now(), nome: `Candidato ${candidatos.length + 1}`, foto: '', votos: 0 });
             renderizarFormulario();
         }
 
         function removerCandidato(index) {
+            sincronizarCamposDigitados();
             candidatos.splice(index, 1);
             renderizarFormulario();
         }
 
         function alternarTurno() {
+            sincronizarCamposDigitados();
             if (turnoAtual === '1') {
                 if (confirm('Deseja avançar para o 2º Turno? Isso selecionará automaticamente os 2 mais votados e zerará os votos para a nova etapa.')) {
                     candidatos.sort((a, b) => b.votos - a.votos);
@@ -215,6 +256,8 @@
         }
 
         function salvarApuracao() {
+            sincronizarCamposDigitados();
+
             const agora = new Date();
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const dataHoraFull = agora.toLocaleDateString('pt-BR') + ' às ' + horaFormatada;
@@ -240,13 +283,13 @@
                 renderizarFormulario();
                 alert('Apuração atualizada com sucesso!');
             } catch (e) {
-                alert('Erro ao salvar: a memória das fotos é muito grande para seu navegador. Clique em Zerar Sistema para limpar a memória.');
+                alert('Erro ao salvar no navegador: memória cheia. Clique no botão de Zerar Sistema.');
             }
         }
 
         function zerarSistema() {
-            if (confirm('⚠️ ATENÇÃO: Deseja realmente ZERAR toda a eleição?\n\nIsso apagará todos os votos, fotos, histórico do gráfico e redefinirá os candidatos.')) {
-                if (confirm('Confirmação Final: Todos os dados acumulados serão apagados permanentemente. Continuar?')) {
+            if (confirm('⚠️ ATENÇÃO: Deseja realmente ZERAR toda a eleição?\n\nIsso apagará todos os votos, fotos e histórico do gráfico.')) {
+                if (confirm('Confirmação Final: Todos os dados serão apagados. Continuar?')) {
                     statusAtual = 'ABERTA';
                     turnoAtual = '1';
                     historicoVotos = [];
