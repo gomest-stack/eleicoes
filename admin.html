@@ -61,7 +61,6 @@
         <button type="button" class="btn-add" onclick="adicionarCandidato()">+ Adicionar Novo Candidato</button>
 
         <form id="adminForm">
-            <!-- Dados Gerais do Eleitorado -->
             <div class="cand-box">
                 <h3>Dados Globais da Eleição</h3>
                 <label>Total de Eleitores Aptos (Esperados):</label>
@@ -132,7 +131,7 @@
                     <label>Nome do Candidato:</label>
                     <input type="text" value="${cand.nome}" onchange="candidatos[${index}].nome = this.value">
                     
-                    <label>Foto (Arquivo do Computador/Celular):</label>
+                    <label>Foto do Candidato:</label>
                     <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
                     <img id="preview-${index}" src="${cand.foto}" class="preview-img" style="display:${cand.foto ? 'block' : 'none'}">
 
@@ -146,7 +145,7 @@
         }
 
         function carregarEComprimirFoto(event, index) {
-            const file = event.target.files;
+            const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
@@ -155,7 +154,7 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const maxDim = 150;
+                    const maxDim = 120; // Otimização extrema para não lotar o localStorage
 
                     let w = img.width;
                     let h = img.height;
@@ -169,7 +168,7 @@
                     canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
 
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
                     candidatos[index].foto = compressedBase64;
                     const preview = document.getElementById(`preview-${index}`);
                     preview.src = compressedBase64;
@@ -236,13 +235,17 @@
                 historico: historicoVotos
             };
 
-            localStorage.setItem('dadosApuracao', JSON.stringify(dados));
-            renderizarFormulario();
-            alert('Apuração atualizada com sucesso!');
+            try {
+                localStorage.setItem('dadosApuracao', JSON.stringify(dados));
+                renderizarFormulario();
+                alert('Apuração atualizada com sucesso!');
+            } catch (e) {
+                alert('Erro ao salvar: a memória das fotos é muito grande para seu navegador. Clique em Zerar Sistema para limpar a memória.');
+            }
         }
 
         function zerarSistema() {
-            if (confirm('⚠️ ATENÇÃO: Deseja realmente ZERAR toda a eleição?\n\nIsso apagará todos os votos, histórico do gráfico e redefinirá os candidatos para o início.')) {
+            if (confirm('⚠️ ATENÇÃO: Deseja realmente ZERAR toda a eleição?\n\nIsso apagará todos os votos, fotos, histórico do gráfico e redefinirá os candidatos.')) {
                 if (confirm('Confirmação Final: Todos os dados acumulados serão apagados permanentemente. Continuar?')) {
                     statusAtual = 'ABERTA';
                     turnoAtual = '1';
@@ -268,7 +271,7 @@
 
                     localStorage.setItem('dadosApuracao', JSON.stringify(dadosLimpos));
                     renderizarFormulario();
-                    alert('Sistema zerado com sucesso! A eleição pode recomeçar.');
+                    alert('Sistema zerado com sucesso!');
                 }
             }
         }
