@@ -22,7 +22,7 @@
         .cand-top { display: flex; align-items: center; justify-content: space-between; }
         .cand-info { display: flex; align-items: center; gap: 16px; }
         
-        .cand-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); background-color: #f8fafc; }
+        .cand-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #64748b; }
         .cand-name { font-size: 19px; font-weight: 700; color: #0f172a; }
 
         .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-block; }
@@ -35,7 +35,6 @@
         .progress-bg { background: #f1f5f9; height: 14px; border-radius: 7px; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 7px; }
 
-        /* Painel de Estatísticas Gerais e Abstenção */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 20px; border: 1px solid #e2e8f0; text-align: center; }
         .stats-item { background: #ffffff; padding: 12px 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .stats-item label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; display: block; }
@@ -65,7 +64,6 @@
 
         <div id="candidatosContainer"></div>
 
-        <!-- Estatísticas Gerais / Eleitores / Abstenção -->
         <div class="stats-grid">
             <div class="stats-item">
                 <label>Eleitores Aptos</label>
@@ -116,7 +114,6 @@
             const totalValidos = candidatos.reduce((sum, c) => sum + (c.votos || 0), 0);
             const totalGeral = totalValidos + brancos + nulos;
 
-            // Cálculos de Abstenção e Comparecimento
             const abstencaoQtd = Math.max(0, totalEleitores - totalGeral);
             const pctComparecimento = totalEleitores > 0 ? ((totalGeral / totalEleitores) * 100).toFixed(2) : '0.00';
             const pctAbstencao = totalEleitores > 0 ? ((abstencaoQtd / totalEleitores) * 100).toFixed(2) : '0.00';
@@ -129,7 +126,8 @@
 
             candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
 
-            const alguemEleito1Turno = totalValidos > 0 && candidatos[0] && candidatos[0].votos > (totalValidos / 2);
+            const primeiroVotos = candidatos.length > 0 ? (candidatos[0].votos || 0) : 0;
+            const alguemEleito1Turno = totalValidos > 0 && primeiroVotos > (totalValidos / 2);
 
             let html = '';
             candidatos.forEach((c, index) => {
@@ -161,7 +159,9 @@
                     <div class="card">
                         <div class="cand-top">
                             <div class="cand-info">
-                                ${fotoUrl ? `<img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">` : '<div class="cand-photo"></div>'}
+                                ${fotoUrl 
+                                    ? `<img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">` 
+                                    : `<div class="cand-photo">👤</div>`}
                                 <div>
                                     <div class="cand-name">${c.nome}</div>
                                     ${badgeStatus}
