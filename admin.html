@@ -5,46 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador - Lançamento de Votos (ADMIN)</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: #f0f4f8; color: #1e293b; padding: 20px; }
-        .admin-card { max-width: 650px; margin: 0 auto; background: #ffffff; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
-        h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #0f172a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: #f1f5f9; color: #0f172a; padding: 20px; }
+        .admin-card { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 28px; border-radius: 18px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0; }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 24px; color: #0f172a; font-weight: 800; }
         
         .control-btns { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        button { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
+        button { flex: 1; min-width: 130px; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
         
         .btn-open { background-color: #16a34a; color: white; }
         .btn-close { background-color: #dc2626; color: white; }
         .btn-turno { background-color: #0288d1; color: white; width: 100%; margin-bottom: 16px; font-size: 14px; }
-        .btn-add { background-color: #d97706; color: white; margin-bottom: 16px; width: 100%; font-size: 15px; }
-        .btn-remove { background-color: #ef4444; color: white; padding: 5px 12px; font-size: 12px; border-radius: 6px; float: right; }
-        .btn-save { background-color: #2563eb; color: white; width: 100%; margin-top: 15px; font-size: 16px; padding: 14px; }
+        .btn-add { background-color: #d97706; color: white; margin-bottom: 20px; width: 100%; font-size: 15px; }
+        .btn-remove { background-color: #ef4444; color: white; padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+        .btn-save { background-color: #2563eb; color: white; width: 100%; margin-top: 20px; font-size: 16px; padding: 14px; }
         .btn-print { background-color: #475569; color: white; width: 100%; margin-top: 10px; font-size: 15px; padding: 12px; }
         .btn-reset { background-color: #991b1b; color: white; width: 100%; margin-top: 10px; font-size: 14px; padding: 10px; }
 
-        .cand-box { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-        .cand-box-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .cand-box-header h3 { font-size: 16px; color: #0f172a; font-weight: 700; }
-        
-        label { display: block; margin-top: 10px; margin-bottom: 5px; font-size: 13px; color: #475569; font-weight: 600; }
-        input[type="number"], input[type="text"], input[type="file"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 14px; }
-        
-        .photo-area { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-        .preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .photo-status { font-size: 12px; font-weight: 600; color: #16a34a; }
+        .candidatos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
 
-        .badge-turno-info { text-align: center; font-weight: bold; color: #92400e; background: #fef3c7; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .cand-card-admin { 
+            background: #f8fafc; 
+            padding: 18px; 
+            border-radius: 14px; 
+            border: 1px solid #e2e8f0; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .cand-header-admin { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .cand-header-admin h3 { font-size: 15px; color: #0f172a; font-weight: 700; }
+        
+        .photo-center { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 4px 0; }
+        .preview-img-admin { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .photo-status { font-size: 11px; font-weight: 600; color: #16a34a; }
 
-        .chart-box-admin { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px; }
+        label { display: block; margin-top: 6px; margin-bottom: 4px; font-size: 12px; color: #475569; font-weight: 700; text-transform: uppercase; }
+        input[type="number"], input[type="text"], input[type="file"] { width: 100%; padding: 9px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 14px; }
+        
+        .increment-box { background: #ffffff; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-top: 4px; }
+        .increment-row { display: flex; gap: 6px; margin-top: 4px; }
+        .btn-inc-add { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; white-space: nowrap; font-size: 13px; }
+        .quick-btns { display: flex; gap: 6px; margin-top: 6px; }
+        .btn-quick { background: #e2e8f0; color: #0f172a; border: none; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; flex: 1; }
+        .btn-quick:hover { background: #cbd5e1; }
+
+        .global-box { background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        
+        .badge-turno-info { text-align: center; font-weight: bold; color: #92400e; background: #fef3c7; padding: 10px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; border: 1px solid #fde68a; }
+
+        .chart-box-admin { background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; margin-top: 20px; }
         .chart-box-admin h3 { font-size: 15px; color: #0f172a; margin-bottom: 12px; text-align: center; }
 
         @media print {
             body { background: white; padding: 0; }
             .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
-            .control-btns, .btn-add, .btn-save, .btn-print, .btn-reset, .btn-turno, input[type="file"], .btn-remove { display: none !important; }
+            .control-btns, .btn-add, .btn-save, .btn-print, .btn-reset, .btn-turno, input[type="file"], .btn-remove, .increment-box, .quick-btns { display: none !important; }
             input { border: none !important; background: transparent !important; font-weight: bold; font-size: 16px !important; }
-            .cand-box { border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
+            .cand-card-admin { border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
             .chart-box-admin { page-break-inside: avoid; margin-top: 30px; border: 1px solid #cbd5e1; }
         }
     </style>
@@ -64,15 +90,19 @@
         <button type="button" class="btn-add" onclick="adicionarCandidato()">+ Adicionar Novo Candidato</button>
 
         <form id="adminForm">
-            <div class="cand-box">
-                <h3>Dados Globais da Eleição</h3>
+            <div class="global-box">
+                <h3>Configurações Globais da Eleição</h3>
+                <label>Título / Nome da Eleição:</label>
+                <input type="text" id="tituloEleicao" placeholder="Ex: Eleição para Direção Escolar 2026" value="Eleições - Apuração Oficial">
+                
                 <label>Total de Eleitores Aptos (Esperados):</label>
                 <input type="number" id="totalEleitores" value="0" min="0" placeholder="Ex: 500">
             </div>
 
-            <div id="listaCandidatos"></div>
+            <h3 style="margin-bottom: 10px; color: #0f172a;">Candidatos Cadastrados</h3>
+            <div id="listaCandidatos" class="candidatos-grid"></div>
 
-            <div class="cand-box">
+            <div class="global-box">
                 <h3>Votos Secundários</h3>
                 <label>Votos Brancos:</label>
                 <input type="number" id="brancos" value="0" min="0">
@@ -106,6 +136,7 @@
             if (salvas) {
                 try {
                     const data = JSON.parse(salvas);
+                    if (data.tituloEleicao) document.getElementById('tituloEleicao').value = data.tituloEleicao;
                     if (data.totalEleitores !== undefined) document.getElementById('totalEleitores').value = data.totalEleitores;
                     if (data.candidatos && data.candidatos.length > 0) candidatos = data.candidatos;
                     if (data.status) statusAtual = data.status;
@@ -125,36 +156,66 @@
 
             candidatos.forEach((cand, index) => {
                 const box = document.createElement('div');
-                box.className = 'cand-box';
+                box.className = 'cand-card-admin';
                 const temFoto = cand.foto && cand.foto.length > 0;
                 
                 box.innerHTML = `
-                    <div class="cand-box-header">
-                        <h3>Candidato ${index + 1}</h3>
-                        ${candidatos.length > 2 ? `<button type="button" class="btn-remove" onclick="removerCandidato(${index})">Remover</button>` : ''}
+                    <div class="cand-header-admin">
+                        <h3>#${index + 1}</h3>
+                        ${candidatos.length > 2 ? `<button type="button" class="btn-remove" onclick="removerCandidato(${index})">Excluir</button>` : ''}
                     </div>
-                    <label>Nome do Candidato:</label>
-                    <input type="text" id="nome-cand-${index}" value="${cand.nome}">
                     
-                    <label>Foto do Candidato (Selecione da galeria/PC):</label>
-                    <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
-                    
-                    <div class="photo-area">
+                    <div class="photo-center">
                         ${temFoto 
-                            ? `<img id="preview-${index}" src="${cand.foto}" class="preview-img">` 
-                            : `<div id="preview-${index}" class="preview-img">👤</div>`}
+                            ? `<img id="preview-${index}" src="${cand.foto}" class="preview-img-admin">` 
+                            : `<div id="preview-${index}" class="preview-img-admin">👤</div>`}
                         <span id="photo-status-${index}" class="photo-status">
-                            ${temFoto ? '✓ Foto salva no sistema' : 'Nenhuma foto selecionada'}
+                            ${temFoto ? '✓ Foto salva' : 'Sem foto'}
                         </span>
                     </div>
 
-                    <label>Votos Acumulados:</label>
+                    <label>Nome:</label>
+                    <input type="text" id="nome-cand-${index}" value="${cand.nome}">
+                    
+                    <label>Foto (Arquivo):</label>
+                    <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
+
+                    <label>Total de Votos:</label>
                     <input type="number" id="votos-cand-${index}" value="${cand.votos}" min="0">
+
+                    <div class="increment-box">
+                        <label style="margin:0; font-size:11px; color:#2563eb;">+ Adicionar Votos:</label>
+                        <div class="increment-row">
+                            <input type="number" id="add-votos-${index}" placeholder="+ Qtd" min="1">
+                            <button type="button" class="btn-inc-add" onclick="adicionarVotosQtd(${index})">+ Somar</button>
+                        </div>
+                        <div class="quick-btns">
+                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 1)">+1</button>
+                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 5)">+5</button>
+                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 10)">+10</button>
+                        </div>
+                    </div>
                 `;
                 container.appendChild(box);
             });
 
             desenharGraficoAdmin(historicoVotos);
+        }
+
+        function adicionarVotosQtd(index) {
+            sincronizarCamposDigitados();
+            const elInput = document.getElementById(`add-votos-${index}`);
+            const qtd = parseInt(elInput ? elInput.value : 0) || 0;
+            if (qtd > 0) {
+                candidatos[index].votos = (candidatos[index].votos || 0) + qtd;
+                renderizarFormulario();
+            }
+        }
+
+        function adicionarVotosDireto(index, qtd) {
+            sincronizarCamposDigitados();
+            candidatos[index].votos = (candidatos[index].votos || 0) + qtd;
+            renderizarFormulario();
         }
 
         function carregarEComprimirFoto(event, index) {
@@ -184,24 +245,7 @@
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
                     candidatos[index].foto = compressedBase64;
                     
-                    const preview = document.getElementById(`preview-${index}`);
-                    const statusText = document.getElementById(`photo-status-${index}`);
-                    
-                    if (preview) {
-                        if (preview.tagName === 'IMG') {
-                            preview.src = compressedBase64;
-                        } else {
-                            const newImg = document.createElement('img');
-                            newImg.id = `preview-${index}`;
-                            newImg.className = 'preview-img';
-                            newImg.src = compressedBase64;
-                            preview.parentNode.replaceChild(newImg, preview);
-                        }
-                    }
-                    if (statusText) {
-                        statusText.innerText = '✓ Foto processada! Clique em Salvar.';
-                        statusText.style.color = '#16a34a';
-                    }
+                    renderizarFormulario();
                 };
                 img.src = e.target.result;
             };
@@ -268,6 +312,7 @@
             historicoVotos.push({ hora: horaFormatada, votosPorCand: votosMap });
 
             const dados = {
+                tituloEleicao: document.getElementById('tituloEleicao').value || 'Eleições - Apuração Oficial',
                 status: statusAtual,
                 turno: turnoAtual,
                 ultimaAtualizacao: dataHoraFull,
@@ -302,6 +347,7 @@
                     document.getElementById('nulos').value = 0;
 
                     const dadosLimpos = {
+                        tituloEleicao: document.getElementById('tituloEleicao').value || 'Eleições - Apuração Oficial',
                         status: statusAtual,
                         turno: turnoAtual,
                         ultimaAtualizacao: 'Sistema Zerado',
