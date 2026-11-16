@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Justiça Eleitoral - Divulgação de Resultados</title>
+    <title>Sistema de Apuração - Resultados ao Vivo</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background-color: #edf2f7; color: #1a202c; padding-bottom: 40px; }
         
-        /* Topo Oficial TSE */
-        .tse-header { background: #081d38; color: #ffffff; padding: 16px 20px; border-bottom: 4px solid #f59e0b; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        /* Topo Limpo e Profissional */
+        .tse-header { background: #081d38; color: #ffffff; padding: 18px 20px; border-bottom: 4px solid #f59e0b; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .tse-header-inner { max-width: 820px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .tse-brand { display: flex; align-items: center; gap: 10px; }
-        .tse-logo-icon { font-size: 26px; }
-        .tse-title-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #fbbf24; font-weight: 700; }
-        .tse-title-main { font-size: 20px; font-weight: 800; color: #ffffff; }
+        .tse-brand { display: flex; align-items: center; gap: 12px; }
+        .tse-logo-icon { font-size: 28px; }
+        .tse-title-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #fbbf24; font-weight: 700; }
+        .tse-title-main { font-size: 22px; font-weight: 800; color: #ffffff; }
 
         .container { max-width: 820px; margin: 24px auto 0; padding: 0 16px; }
 
         /* Barra de Status e Atualização */
-        .status-bar { background: #ffffff; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .status-bar { background: #ffffff; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 16px; }
         .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; }
         .pulse-green { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulse 1.6s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
@@ -31,7 +31,12 @@
         .clock-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #475569; font-weight: 600; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .clock-badge strong { color: #0288d1; }
 
-        /* Card do Candidato - Estilo TSE */
+        /* Card de Projeção & Análise */
+        .projecao-card { background: linear-gradient(135deg, #081d38, #0f3460); color: #ffffff; border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; border: 1px solid #1e40af; box-shadow: 0 6px 16px rgba(8, 29, 56, 0.2); }
+        .projecao-header { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #fbbf24; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .projecao-texto { font-size: 15px; font-weight: 600; line-height: 1.4; color: #f8fafc; }
+
+        /* Card do Candidato */
         .cand-card { background: #ffffff; border-radius: 14px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s; }
         .cand-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         
@@ -58,7 +63,7 @@
         .progress-bar-bg { background: #e2e8f0; height: 14px; border-radius: 7px; overflow: hidden; }
         .progress-bar-fill { background: linear-gradient(90deg, #0288d1, #2563eb); height: 100%; width: 0%; transition: width 0.6s ease; border-radius: 7px; }
 
-        /* Resumo Estatístico TSE */
+        /* Resumo Estatístico */
         .stats-container { background: #ffffff; border-radius: 14px; padding: 20px; border: 1px solid #e2e8f0; margin-top: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .stats-title { font-size: 15px; font-weight: 800; color: #081d38; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
         
@@ -85,7 +90,7 @@
             <div class="tse-brand">
                 <span class="tse-logo-icon">🗳️</span>
                 <div>
-                    <div class="tse-title-sub">Justiça Eleitoral • Apuração Oficial</div>
+                    <div class="tse-title-sub">Sistema de Apuração • Resultados ao Vivo</div>
                     <div class="tse-title-main" id="tituloEleicaoView">Eleições - Apuração Oficial</div>
                 </div>
             </div>
@@ -102,6 +107,11 @@
                 <span>⏱️ Última atualização:</span>
                 <strong id="lastUpdate">--:--:--</strong>
             </div>
+        </div>
+
+        <div class="projecao-card">
+            <div class="projecao-header">📊 Análise da Disputa & Projeções</div>
+            <div id="projecaoTexto" class="projecao-texto">Aguardando o lançamento dos primeiros votos...</div>
         </div>
 
         <div id="candidatosContainer"></div>
@@ -183,6 +193,8 @@
             const primeiroVotos = candidatos.length > 0 ? (candidatos[0].votos || 0) : 0;
             const alguemEleito1Turno = totalValidos > 0 && primeiroVotos > (totalValidos / 2);
 
+            atualizarProjecao(votacaoAberta, turno, candidatos, totalValidos, alguemEleito1Turno);
+
             let html = '';
             candidatos.forEach((c, index) => {
                 const votosCand = c.votos || 0;
@@ -238,6 +250,44 @@
 
             document.getElementById('candidatosContainer').innerHTML = html;
             desenharGrafico(data.historico || []);
+        }
+
+        function atualizarProjecao(aberta, turno, candidatos, totalValidos, alguemEleito1Turno) {
+            const el = document.getElementById('projecaoTexto');
+            if (!candidatos || candidatos.length === 0 || totalValidos === 0) {
+                el.innerHTML = "Aguardando o lançamento dos primeiros votos para gerar análise.";
+                return;
+            }
+
+            const lider = candidatos[0];
+            const segundo = candidatos.length > 1 ? candidatos[1] : null;
+            const diff = segundo ? (lider.votos - segundo.votos) : lider.votos;
+            const pctLider = ((lider.votos / totalValidos) * 100).toFixed(2).replace('.', ',');
+
+            if (aberta) {
+                if (turno === '1') {
+                    const maioriaAbsoluta = Math.floor(totalValidos / 2) + 1;
+                    const falta1Turno = maioriaAbsoluta - lider.votos;
+
+                    if (lider.votos >= maioriaAbsoluta) {
+                        el.innerHTML = `🏆 <strong>${lider.nome}</strong> atinge a maioria absoluta com <strong>${lider.votos.toLocaleString('pt-BR')} votos (${pctLider}%)</strong>. Vantagem de <strong>${diff.toLocaleString('pt-BR')} voto(s)</strong> sobre ${segundo ? segundo.nome : 'o 2º colocado'}.`;
+                    } else {
+                        el.innerHTML = `📈 <strong>${lider.nome}</strong> lidera com <strong>${pctLider}%</strong> dos votos válidos (${diff.toLocaleString('pt-BR')} voto(s) à frente de ${segundo ? segundo.nome : 'demais'}). Faltam <strong>${falta1Turno.toLocaleString('pt-BR')} voto(s)</strong> para alcançar a maioria absoluta no 1º Turno.`;
+                    }
+                } else {
+                    el.innerHTML = `⚔️ Disputa no 2º Turno: <strong>${lider.nome}</strong> lidera com <strong>${pctLider}%</strong> das intenções. Diferença atual de <strong>${diff.toLocaleString('pt-BR')} voto(s)</strong> sobre <strong>${segundo ? segundo.nome : 'o adversário'}</strong>.`;
+                }
+            } else {
+                if (turno === '1') {
+                    if (alguemEleito1Turno) {
+                        el.innerHTML = `🥇 <strong>RESULTADO FINAL:</strong> <strong>${lider.nome}</strong> é declarado vencedor no 1º Turno com <strong>${pctLider}%</strong> dos votos válidos (${lider.votos.toLocaleString('pt-BR')} votos). Vantagem final de <strong>${diff.toLocaleString('pt-BR')} voto(s)</strong>.`;
+                    } else {
+                        el.innerHTML = `🔄 <strong>2º TURNO CONFIRMADO:</strong> A disputa segue para a segunda fase entre <strong>${lider.nome}</strong> e <strong>${segundo ? segundo.nome : '2º Colocado'}</strong>. Diferença ao fim do 1º Turno: <strong>${diff.toLocaleString('pt-BR')} voto(s)</strong>.`;
+                    }
+                } else {
+                    el.innerHTML = `🥇 <strong>RESULTADO FINAL DO 2º TURNO:</strong> <strong>${lider.nome}</strong> é eleito com <strong>${pctLider}%</strong> dos votos válidos. Vitória confirmada com vantagem final de <strong>${diff.toLocaleString('pt-BR')} voto(s)</strong>!`;
+                }
+            }
         }
 
         function desenharGrafico(historico) {
