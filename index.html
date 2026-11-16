@@ -3,148 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apuração Oficial - Resultados</title>
+    <title>Justiça Eleitoral - Divulgação de Resultados</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body { 
-            background-color: #f1f5f9; 
-            color: #0f172a; 
-            padding: 24px 16px;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 24px 24px;
-            min-height: 100vh;
-        }
-        .container { 
-            max-width: 760px; 
-            margin: 0 auto; 
-            background: #ffffff; 
-            border-radius: 20px; 
-            padding: 32px; 
-            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08); 
-            border: 1px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
-        }
-        .container::before {
-            content: "🗳️";
-            position: absolute;
-            top: -20px;
-            right: -20px;
-            font-size: 140px;
-            opacity: 0.04;
-            pointer-events: none;
-            user-select: none;
-        }
+        body { background-color: #edf2f7; color: #1a202c; padding-bottom: 40px; }
         
-        .header { text-align: center; border-bottom: 2px dashed #e2e8f0; padding-bottom: 22px; margin-bottom: 26px; }
-        .header h1 { font-size: 26px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
-        .header-badges { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        /* Topo Oficial TSE */
+        .tse-header { background: #081d38; color: #ffffff; padding: 16px 20px; border-bottom: 4px solid #f59e0b; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .tse-header-inner { max-width: 820px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .tse-brand { display: flex; align-items: center; gap: 10px; }
+        .tse-logo-icon { font-size: 26px; }
+        .tse-title-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #fbbf24; font-weight: 700; }
+        .tse-title-main { font-size: 20px; font-weight: 800; color: #ffffff; }
+
+        .container { max-width: 820px; margin: 24px auto 0; padding: 0 16px; }
+
+        /* Barra de Status e Atualização */
+        .status-bar { background: #ffffff; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+        .pulse-green { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulse 1.6s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         
-        .status-badge { padding: 6px 16px; border-radius: 30px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .aberta { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
-        .fechada { background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
-        .turno-badge { background-color: #fef3c7; color: #b45309; padding: 6px 16px; border-radius: 30px; font-weight: 700; font-size: 13px; border: 1px solid #fde68a; }
+        .aberta-pill { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .fechada-pill { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .turno-pill { background-color: #fffbebf5; color: #b45309; border: 1px solid #fde68a; }
 
-        .update-badge { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px; 
-            background: #f8fafc; 
-            border: 1px solid #cbd5e1; 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 13px; 
-            color: #475569; 
-            margin-top: 14px; 
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .update-badge strong { color: #2563eb; font-weight: 700; }
+        .clock-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #475569; font-weight: 600; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .clock-badge strong { color: #0288d1; }
 
-        .card { 
-            background: #ffffff; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 14px; 
-            padding: 20px; 
-            margin-bottom: 18px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 14px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        .cand-top { display: flex; align-items: center; justify-content: space-between; }
-        .cand-info { display: flex; align-items: center; gap: 16px; }
+        /* Card do Candidato - Estilo TSE */
+        .cand-card { background: #ffffff; border-radius: 14px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s; }
+        .cand-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         
-        .cand-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #64748b; flex-shrink: 0; }
-        .cand-name { font-size: 20px; font-weight: 700; color: #0f172a; }
+        .cand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .cand-left { display: flex; align-items: center; gap: 16px; }
+        
+        .rank-badge { font-size: 16px; font-weight: 800; color: #64748b; background: #f1f5f9; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .top-rank { background: #081d38; color: #ffffff; }
 
-        .badge-eleito { background-color: #16a34a; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 6px; display: inline-block; }
-        .badge-2turno { background-color: #0288d1; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 6px; display: inline-block; }
-        .badge-nao-eleito { background-color: #94a3b8; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 6px; display: inline-block; }
+        .cand-photo-wrap { position: relative; }
+        .cand-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #0288d1; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #64748b; }
+        
+        .cand-details { display: flex; flex-direction: column; gap: 4px; }
+        .cand-name { font-size: 20px; font-weight: 800; color: #081d38; line-height: 1.2; }
+        
+        .badge-eleito { background-color: #15803d; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; width: fit-content; text-transform: uppercase; }
+        .badge-2turno { background-color: #0288d1; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; width: fit-content; text-transform: uppercase; }
+        .badge-nao-eleito { background-color: #94a3b8; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; width: fit-content; text-transform: uppercase; }
 
-        .pct-big { font-size: 30px; font-weight: 800; color: #2563eb; text-align: right; line-height: 1; }
-        .votos-qtd { font-size: 13px; color: #64748b; text-align: right; margin-top: 5px; font-weight: 500; }
+        .cand-right { text-align: right; }
+        .pct-big { font-size: 32px; font-weight: 900; color: #081d38; line-height: 1; letter-spacing: -1px; }
+        .votos-qtd { font-size: 13px; color: #64748b; font-weight: 600; margin-top: 4px; }
 
-        .progress-bg { background: #f1f5f9; height: 16px; border-radius: 8px; overflow: hidden; }
-        .progress-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; }
+        .progress-bar-bg { background: #e2e8f0; height: 14px; border-radius: 7px; overflow: hidden; }
+        .progress-bar-fill { background: linear-gradient(90deg, #0288d1, #2563eb); height: 100%; width: 0%; transition: width 0.6s ease; border-radius: 7px; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; background: #f8fafc; padding: 18px; border-radius: 14px; margin-top: 24px; border: 1px solid #e2e8f0; text-align: center; }
-        .stats-item { background: #ffffff; padding: 12px 10px; border-radius: 10px; border: 1px solid #e2e8f0; }
-        .stats-item label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
-        .stats-item span { display: block; font-weight: 800; font-size: 16px; color: #0f172a; margin-top: 4px; }
-        .highlight-abstencao { border-color: #fca5a5; background: #fff5f5; }
-        .highlight-abstencao span { color: #dc2626; }
+        /* Resumo Estatístico TSE */
+        .stats-container { background: #ffffff; border-radius: 14px; padding: 20px; border: 1px solid #e2e8f0; margin-top: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .stats-title { font-size: 15px; font-weight: 800; color: #081d38; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; text-align: center; }
+        .stats-box { background: #f8fafc; padding: 14px 10px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .stats-box label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; }
+        .stats-box span { display: block; font-weight: 800; font-size: 16px; color: #081d38; margin-top: 4px; }
+        .box-abstencao { background: #fef2f2; border-color: #fecaca; }
+        .box-abstencao span { color: #dc2626; }
 
-        .chart-box { background: #f8fafc; padding: 20px; border-radius: 14px; border: 1px solid #e2e8f0; margin-top: 24px; }
-        .chart-box h3 { font-size: 16px; color: #0f172a; margin-bottom: 16px; text-align: center; font-weight: 700; }
+        .chart-card { background: #ffffff; border-radius: 14px; padding: 20px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .chart-card h3 { font-size: 15px; font-weight: 800; color: #081d38; margin-bottom: 14px; text-align: center; text-transform: uppercase; }
 
         @media print {
             body { background: white; padding: 0; }
-            .container { border: none; box-shadow: none; max-width: 100%; width: 100%; }
+            .tse-header { background: #081d38 !important; color: white !important; }
+            .container { max-width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 id="tituloEleicaoView">Eleições - Apuração Oficial</h1>
-            <div class="header-badges">
-                <div id="statusBadge" class="status-badge aberta">AGUARDANDO DADOS...</div>
-                <div id="turnoBadge" class="turno-badge">1º TURNO</div>
+    <header class="tse-header">
+        <div class="tse-header-inner">
+            <div class="tse-brand">
+                <span class="tse-logo-icon">🗳️</span>
+                <div>
+                    <div class="tse-title-sub">Justiça Eleitoral • Apuração Oficial</div>
+                    <div class="tse-title-main" id="tituloEleicaoView">Eleições - Apuração Oficial</div>
+                </div>
             </div>
-            <div>
-                <div class="update-badge">⏱️ Última atualização: <strong id="lastUpdate">--:--:--</strong></div>
+            <div id="turnoPill" class="status-pill turno-pill">1º TURNO</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="status-bar">
+            <div id="statusPill" class="status-pill aberta-pill">
+                <span class="pulse-green"></span> EM APURAÇÃO
+            </div>
+            <div class="clock-badge">
+                <span>⏱️ Última atualização:</span>
+                <strong id="lastUpdate">--:--:--</strong>
             </div>
         </div>
 
         <div id="candidatosContainer"></div>
 
-        <div class="stats-grid">
-            <div class="stats-item">
-                <label>Eleitores Aptos</label>
-                <span id="totalEleitoresView">0</span>
-            </div>
-            <div class="stats-item">
-                <label>Comparecimento</label>
-                <span id="comparecimentoView">0 (0,00%)</span>
-            </div>
-            <div class="stats-item highlight-abstencao">
-                <label>Abstenção</label>
-                <span id="abstencaoView">0 (0,00%)</span>
-            </div>
-            <div class="stats-item">
-                <label>Brancos</label>
-                <span id="votosBrancos">0</span>
-            </div>
-            <div class="stats-item">
-                <label>Nulos</label>
-                <span id="votosNulos">0</span>
+        <div class="stats-container">
+            <div class="stats-title">Resumo da Votação e Comparecimento</div>
+            <div class="stats-grid">
+                <div class="stats-box">
+                    <label>Eleitores Aptos</label>
+                    <span id="totalEleitoresView">0</span>
+                </div>
+                <div class="stats-box">
+                    <label>Comparecimento</label>
+                    <span id="comparecimentoView">0 (0,00%)</span>
+                </div>
+                <div class="stats-box box-abstencao">
+                    <label>Abstenção</label>
+                    <span id="abstencaoView">0 (0,00%)</span>
+                </div>
+                <div class="stats-box">
+                    <label>Brancos</label>
+                    <span id="votosBrancos">0</span>
+                </div>
+                <div class="stats-box">
+                    <label>Nulos</label>
+                    <span id="votosNulos">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="chart-box">
+        <div class="chart-card">
             <h3>Evolução dos Votos em Tempo Real</h3>
             <canvas id="graficoEvolucao" style="width: 100%; height: 220px;"></canvas>
         </div>
@@ -158,13 +146,19 @@
                 document.getElementById('tituloEleicaoView').innerText = data.tituloEleicao;
             }
             document.getElementById('lastUpdate').innerText = data.ultimaAtualizacao || '--';
+            
             const votacaoAberta = data.status === 'ABERTA';
-            const badge = document.getElementById('statusBadge');
-            badge.innerText = votacaoAberta ? 'EM APURAÇÃO' : 'VOTAÇÃO ENCERRADA';
-            badge.className = 'status-badge ' + (votacaoAberta ? 'aberta' : 'fechada');
+            const statusPill = document.getElementById('statusPill');
+            if (votacaoAberta) {
+                statusPill.innerHTML = '<span class="pulse-green"></span> EM APURAÇÃO';
+                statusPill.className = 'status-pill aberta-pill';
+            } else {
+                statusPill.innerHTML = '🔴 VOTAÇÃO ENCERRADA';
+                statusPill.className = 'status-pill fechada-pill';
+            }
 
             const turno = data.turno || '1';
-            document.getElementById('turnoBadge').innerText = turno === '1' ? '1º TURNO' : '2º TURNO';
+            document.getElementById('turnoPill').innerText = turno === '1' ? '1º TURNO' : '2º TURNO';
 
             const totalEleitores = data.totalEleitores || 0;
             const candidatos = (data.candidatos || []).slice();
@@ -178,11 +172,11 @@
             const pctComparecimento = totalEleitores > 0 ? ((totalGeral / totalEleitores) * 100).toFixed(2) : '0.00';
             const pctAbstencao = totalEleitores > 0 ? ((abstencaoQtd / totalEleitores) * 100).toFixed(2) : '0.00';
 
-            document.getElementById('totalEleitoresView').innerText = totalEleitores;
-            document.getElementById('comparecimentoView').innerText = `${totalGeral} (${pctComparecimento.replace('.', ',')}%)`;
-            document.getElementById('abstencaoView').innerText = `${abstencaoQtd} (${pctAbstencao.replace('.', ',')}%)`;
-            document.getElementById('votosBrancos').innerText = brancos;
-            document.getElementById('votosNulos').innerText = nulos;
+            document.getElementById('totalEleitoresView').innerText = totalEleitores.toLocaleString('pt-BR');
+            document.getElementById('comparecimentoView').innerText = `${totalGeral.toLocaleString('pt-BR')} (${pctComparecimento.replace('.', ',')}%)`;
+            document.getElementById('abstencaoView').innerText = `${abstencaoQtd.toLocaleString('pt-BR')} (${pctAbstencao.replace('.', ',')}%)`;
+            document.getElementById('votosBrancos').innerText = brancos.toLocaleString('pt-BR');
+            document.getElementById('votosNulos').innerText = nulos.toLocaleString('pt-BR');
 
             candidatos.sort((a, b) => (b.votos || 0) - (a.votos || 0));
 
@@ -216,24 +210,27 @@
                 const fotoUrl = c.foto || '';
 
                 html += `
-                    <div class="card">
-                        <div class="cand-top">
-                            <div class="cand-info">
-                                ${fotoUrl 
-                                    ? `<img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">` 
-                                    : `<div class="cand-photo">👤</div>`}
-                                <div>
+                    <div class="cand-card">
+                        <div class="cand-row">
+                            <div class="cand-left">
+                                <div class="rank-badge ${index === 0 ? 'top-rank' : ''}">${index + 1}º</div>
+                                <div class="cand-photo-wrap">
+                                    ${fotoUrl 
+                                        ? `<img src="${fotoUrl}" class="cand-photo" alt="${c.nome}">` 
+                                        : `<div class="cand-photo">👤</div>`}
+                                </div>
+                                <div class="cand-details">
                                     <div class="cand-name">${c.nome}</div>
                                     ${badgeStatus}
                                 </div>
                             </div>
-                            <div>
+                            <div class="cand-right">
                                 <div class="pct-big">${pctValidos.replace('.', ',')}%</div>
-                                <div class="votos-qtd">${votosCand} votos válidos</div>
+                                <div class="votos-qtd">${votosCand.toLocaleString('pt-BR')} votos válidos</div>
                             </div>
                         </div>
-                        <div class="progress-bg">
-                            <div class="progress-fill" style="width: ${pctValidos}%"></div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${pctValidos}%"></div>
                         </div>
                     </div>
                 `;
@@ -270,7 +267,7 @@
             const nomesCandidatos = Array.from(candidatosSet);
             if (nomesCandidatos.length === 0) return;
 
-            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
+            const cores = ['#0288d1', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
 
             let maxVotos = 1;
             historico.forEach(h => {
@@ -313,7 +310,7 @@
                 const cor = cores[idx % cores.length];
                 ctx.fillStyle = cor;
                 ctx.fillRect(legendX, 10, 12, 12);
-                ctx.fillStyle = '#0f172a';
+                ctx.fillStyle = '#081d38';
                 ctx.font = 'bold 12px Segoe UI, sans-serif';
                 ctx.fillText(nome, legendX + 16, 20);
                 legendX += ctx.measureText(nome).width + 35;
