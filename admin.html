@@ -53,10 +53,7 @@
         
         .increment-box { background: #ffffff; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-top: 4px; }
         .increment-row { display: flex; gap: 6px; margin-top: 4px; }
-        .btn-inc-add { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; white-space: nowrap; font-size: 13px; }
-        .quick-btns { display: flex; gap: 6px; margin-top: 6px; }
-        .btn-quick { background: #e2e8f0; color: #0f172a; border: none; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; flex: 1; }
-        .btn-quick:hover { background: #cbd5e1; }
+        .btn-inc-add { background: #16a34a; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; white-space: nowrap; font-size: 13px; }
 
         .global-box { background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         
@@ -68,7 +65,7 @@
         @media print {
             body { background: white; padding: 0; }
             .admin-card { border: none; box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
-            .control-btns, .btn-add, .btn-save, .btn-print, .btn-reset, .btn-turno, input[type="file"], .btn-remove, .increment-box, .quick-btns { display: none !important; }
+            .control-btns, .btn-add, .btn-save, .btn-print, .btn-reset, .btn-turno, input[type="file"], .btn-remove, .increment-box { display: none !important; }
             input { border: none !important; background: transparent !important; font-weight: bold; font-size: 16px !important; }
             .cand-card-admin { border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
             .chart-box-admin { page-break-inside: avoid; margin-top: 30px; border: 1px solid #cbd5e1; }
@@ -187,12 +184,7 @@
                         <label style="margin:0; font-size:11px; color:#2563eb;">+ Adicionar Votos:</label>
                         <div class="increment-row">
                             <input type="number" id="add-votos-${index}" placeholder="+ Qtd" min="1">
-                            <button type="button" class="btn-inc-add" onclick="adicionarVotosQtd(${index})">+ Somar</button>
-                        </div>
-                        <div class="quick-btns">
-                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 1)">+1</button>
-                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 5)">+5</button>
-                            <button type="button" class="btn-quick" onclick="adicionarVotosDireto(${index}, 10)">+10</button>
+                            <button type="button" class="btn-inc-add" onclick="processarETodosVotos()">+ Somar</button>
                         </div>
                     </div>
                 `;
@@ -202,19 +194,23 @@
             desenharGraficoAdmin(historicoVotos);
         }
 
-        function adicionarVotosQtd(index) {
-            sincronizarCamposDigitados();
-            const elInput = document.getElementById(`add-votos-${index}`);
-            const qtd = parseInt(elInput ? elInput.value : 0) || 0;
-            if (qtd > 0) {
-                candidatos[index].votos = (candidatos[index].votos || 0) + qtd;
-                renderizarFormulario();
-            }
+        function sincronizarEProcessarVotos() {
+            candidatos.forEach((cand, index) => {
+                const elNome = document.getElementById(`nome-cand-${index}`);
+                const elVotos = document.getElementById(`votos-cand-${index}`);
+                const elAdd = document.getElementById(`add-votos-${index}`);
+                
+                if (elNome) cand.nome = elNome.value;
+                
+                let baseVotos = elVotos ? (parseInt(elVotos.value) || 0) : (cand.votos || 0);
+                let addVotos = elAdd ? (parseInt(elAdd.value) || 0) : 0;
+                
+                cand.votos = Math.max(0, baseVotos + addVotos);
+            });
         }
 
-        function adicionarVotosDireto(index, qtd) {
-            sincronizarCamposDigitados();
-            candidatos[index].votos = (candidatos[index].votos || 0) + qtd;
+        function processarETodosVotos() {
+            sincronizarEProcessarVotos();
             renderizarFormulario();
         }
 
@@ -243,8 +239,8 @@
                     ctx.drawImage(img, 0, 0, w, h);
 
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    sincronizarEProcessarVotos();
                     candidatos[index].foto = compressedBase64;
-                    
                     renderizarFormulario();
                 };
                 img.src = e.target.result;
@@ -252,29 +248,20 @@
             reader.readAsDataURL(file);
         }
 
-        function sincronizarCamposDigitados() {
-            candidatos.forEach((cand, index) => {
-                const elNome = document.getElementById(`nome-cand-${index}`);
-                const elVotos = document.getElementById(`votos-cand-${index}`);
-                if (elNome) cand.nome = elNome.value;
-                if (elVotos) cand.votos = parseInt(elVotos.value) || 0;
-            });
-        }
-
         function adicionarCandidato() {
-            sincronizarCamposDigitados();
+            sincronizarEProcessarVotos();
             candidatos.push({ id: Date.now(), nome: `Candidato ${candidatos.length + 1}`, foto: '', votos: 0 });
             renderizarFormulario();
         }
 
         function removerCandidato(index) {
-            sincronizarCamposDigitados();
+            sincronizarEProcessarVotos();
             candidatos.splice(index, 1);
             renderizarFormulario();
         }
 
         function alternarTurno() {
-            sincronizarCamposDigitados();
+            sincronizarEProcessarVotos();
             if (turnoAtual === '1') {
                 if (confirm('Deseja avançar para o 2º Turno? Isso selecionará automaticamente os 2 mais votados e zerará os votos para a nova etapa.')) {
                     candidatos.sort((a, b) => b.votos - a.votos);
@@ -300,7 +287,7 @@
         }
 
         function salvarApuracao() {
-            sincronizarCamposDigitados();
+            sincronizarEProcessarVotos();
 
             const agora = new Date();
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -396,7 +383,7 @@
             const nomesCandidatos = Array.from(candidatosSet);
             if (nomesCandidatos.length === 0) return;
 
-            const cores = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
+            const cores = ['#0288d1', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#e11d48'];
 
             let maxVotos = 1;
             historico.forEach(h => {
