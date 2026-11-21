@@ -111,7 +111,7 @@
                 <button class="btn-close" onclick="setStatus('FECHADA')">Encerrar Votação</button>
             </div>
 
-            <button type="button" class="btn-turno" onclick="alternarTurno()">🔄 Alternar / Avançar para 2º Turno (Mesma Eleição)</button>
+            <button type="button" class="btn-turno" onclick="alternarTurno()">🔄 Alternar / Avançar para 2º Turno (Salva 1º Turno)</button>
             <button type="button" class="btn-add-cand" onclick="adicionarCandidato()">+ Adicionar Novo Candidato</button>
 
             <form id="adminForm">
@@ -160,7 +160,6 @@
             }
 
             if (!eleicoes || eleicoes.length === 0) {
-                // Criar eleição padrão inicial se estiver vazio
                 const padrao = {
                     id: 'eleicao_' + Date.now(),
                     tituloEleicao: 'Eleições - Apuração Oficial',
@@ -181,7 +180,7 @@
                 salvarListaNoStorage();
                 transmitirParaPúblico(padrao);
             } else {
-                eleicaoAtivaId = ativaId || eleicoes[0].id;
+                eleicaoAtivaId = ativaId || (eleicoes[0] ? eleicoes[0].id : null);
             }
 
             renderizarListaEleicoes();
@@ -329,14 +328,14 @@
                     <label>Foto (Arquivo):</label>
                     <input type="file" accept="image/*" onchange="carregarEComprimirFoto(event, ${index})">
 
-                    <label>Total de Votos:</label>
+                    <label>Total de Votos acumulados:</label>
                     <input type="number" id="votos-cand-${index}" value="${cand.votos}" min="0">
 
                     <div class="increment-box">
-                        <label style="margin:0; font-size:11px; color:#2563eb;">+ Adicionar Votos:</label>
+                        <label style="margin:0; font-size:11px; color:#2563eb;">+ Adicionar Votos neste lançamento:</label>
                         <div class="increment-row">
                             <input type="number" id="add-votos-${index}" placeholder="+ Qtd" min="1">
-                            <button type="button" class="btn-inc-add" onclick="processarSomarVotos()">+ Somar</button>
+                            <button type="button" class="btn-inc-add" onclick="processarSomarVotos()">+ Somar Todos</button>
                         </div>
                     </div>
                 `;
@@ -435,17 +434,42 @@
             if (!eleicao) return;
 
             if (eleicao.turno === '1') {
-                if (confirm('Deseja avançar para o 2º Turno desta eleição?\n\nIsso selecionará os 2 candidatos mais votados e zerará os votos para a nova etapa.')) {
-                    eleicao.candidatos.sort((a, b) => b.votos - a.votos);
-                    eleicao.candidatos = eleicao.candidatos.slice(0, 2).map(c => ({ ...c, votos: 0 }));
+                if (confirm('Deseja avançar para o 2º Turno desta eleição?\n\nIsso salvará os dados e o gráfico do 1º Turno nas abas públicas e selecionará os 2 candidatos mais votados.')) {
+                    // Backup completo do 1º Turno
+                    eleicao.dados1Turno = {
+                        candidatos: JSON.parse(JSON.stringify(eleicao.candidatos)),
+                        brancos: eleicao.brancos,
+                        nulos: eleicao.nulos,
+                        totalEleitores: eleicao.totalEleitores,
+                        historico: JSON.parse(JSON.stringify(eleicao.historico || []))
+                    };
+
+                    // Seleção dos 2 mais votados para o 2º Turno
+                    const top2 = JSON.parse(JSON.stringify(eleicao.candidatos))
+                        .sort((a, b) => b.votos - a.votos)
+                        .slice(0, 2)
+                        .map(c => ({ ...c, votos: 0 }));
+
+                    eleicao.dados2Turno = {
+                        candidatos: top2,
+                        brancos: 0,
+                        nulos: 0,
+                        totalEleitores: eleicao.totalEleitores,
+                        historico: []
+                    };
+
                     eleicao.turno = '2';
                     eleicao.status = 'ABERTA';
+                    eleicao.candidatos = top2;
+                    eleicao.brancos = 0;
+                    eleicao.nulos = 0;
                     eleicao.historico = [];
+
                     renderizarFormularioCandidatos();
                     salvarEleicaoAtual(true);
                 }
             } else {
-                if (confirm('Voltar para o 1º Turno desta eleição?')) {
+                if (confirm('Voltar a visualizar/editar o 1º Turno desta eleição?')) {
                     eleicao.turno = '1';
                     renderizarFormularioCandidatos();
                     salvarEleicaoAtual(true);
@@ -476,6 +500,25 @@
             if (!eleicao.historico) eleicao.historico = [];
             eleicao.historico.push({ hora: horaFormatada, votosPorCand: votosMap });
 
+            // Atualiza snapshot do turno ativo
+            if (eleicao.turno === '1') {
+                eleicao.dados1Turno = {
+                    candidatos: JSON.parse(JSON.stringify(eleicao.candidatos)),
+                    brancos: eleicao.brancos,
+                    nulos: eleicao.nulos,
+                    totalEleitores: eleicao.totalEleitores,
+                    historico: JSON.parse(JSON.stringify(eleicao.historico))
+                };
+            } else {
+                eleicao.dados2Turno = {
+                    candidatos: JSON.parse(JSON.stringify(eleicao.candidatos)),
+                    brancos: eleicao.brancos,
+                    nulos: eleicao.nulos,
+                    totalEleitores: eleicao.totalEleitores,
+                    historico: JSON.parse(JSON.stringify(eleicao.historico))
+                };
+            }
+
             salvarListaNoStorage();
 
             if (eleicao.id === eleicaoAtivaId) {
@@ -500,7 +543,7 @@
                 ctx.fillStyle = '#64748b';
                 ctx.font = '14px Segoe UI, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Nenhum histórico registrado ainda.', canvas.width / 2, canvas.height / 2);
+                ctx.fillText('Nenhum histórico registrado ainda para este turno.', canvas.width / 2, canvas.height / 2);
                 return;
             }
 
